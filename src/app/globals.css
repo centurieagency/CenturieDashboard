@@ -1,0 +1,99 @@
+/* Tokens du design system Centurie Growth (tokens.json) */
+:root {
+  /* Couleurs */
+  --ink: #0b0b0a;
+  --charcoal: #211e1a;
+  --cream: #f6f2ec;
+  --cream-alt: #eee8de;
+  --white: #ffffff;
+  --taupe: #a79e90;
+  --taupe-dark: #8b8274;
+  --taupe-light: #cfc8bc;
+  --text-strong: #33302b;
+  --text-body: #43403a;
+  --text-lead: #4a453f;
+  --text-secondary: #524d46;
+  --text-muted: #6b655d;
+  --text-subtle: #7a746a;
+  --text-on-dark-muted: #c9c4bb;
+  --hairline: rgba(11, 11, 10, 0.08);
+  --border: rgba(11, 11, 10, 0.1);
+  --border-strong: rgba(11, 11, 10, 0.14);
+  --border-control: rgba(11, 11, 10, 0.25);
+  --hairline-on-dark: rgba(255, 255, 255, 0.14);
+  --header-glass: rgba(246, 242, 236, 0.92);
+
+  /* Familles (variables posées par next/font dans layout.tsx) */
+  --font-display: var(--font-poppins), sans-serif;
+  --font-body: var(--font-inter), sans-serif;
+  --font-script: var(--font-alex-brush), cursive;
+
+  /* Espacements */
+  --space-1: 5px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-11: 44px;
+  --space-12: 50px;
+  --space-15: 60px;
+
+  /* Rayons */
+  --radius-none: 0;
+  --radius-sm: 2px;
+  --radius-full: 50%;
+
+  /* Mise en page */
+  --container-max: 1180px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  background: var(--cream);
+  color: var(--charcoal);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--charcoal);
+}
+
+a:hover {
+  color: var(--ink);
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--taupe-dark);
+  outline-offset: 3px;
+}
+
+::placeholder {
+  color: var(--text-subtle);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

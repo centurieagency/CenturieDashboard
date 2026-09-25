@@ -1,0 +1,54 @@
+.lockup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-5);
+  color: var(--charcoal);
+}
+
+.onDark {
+  color: var(--white);
+}
+
+.mark {
+  width: 28px;
+  height: auto;
+}
+
+.words {
+  display: flex;
+  flex-direction: column;
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.script {
+  margin-top: -2px;
+  font-family: var(--font-script);
+  font-size: 15px;
+  line-height: 1.2;
+  color: var(--taupe-dark);
+}
+
+.onDark .script {
+  color: var(--taupe);
+}
+
+@media (max-width: 767px) {
+  .mark {
+    width: 26px;
+  }
+
+  .wordmark {
+    font-size: 18px;
+  }
+
+  .script {
+    font-size: 14px;
+  }
+}
