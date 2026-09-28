@@ -66,6 +66,8 @@ export type SubscriptionLine = {
   currentPeriodEnd: number;
 };
 
+export type SubscriptionCustomer = { id: string; email: string | null; name: string | null };
+
 export type CustomerSubscription = {
   id: string;
   status: Stripe.Subscription.Status;
@@ -74,7 +76,15 @@ export type CustomerSubscription = {
   endedAt: number | null;
   trialEnd: number | null;
   lines: SubscriptionLine[];
+  /** Client Stripe propriétaire : renseigné pour l'espace admin. */
+  customer?: SubscriptionCustomer;
 };
+
+function toCustomer(customer: string | Stripe.Customer | Stripe.DeletedCustomer): SubscriptionCustomer {
+  if (typeof customer === "string") return { id: customer, email: null, name: null };
+  if (customer.deleted) return { id: customer.id, email: null, name: null };
+  return { id: customer.id, email: customer.email ?? null, name: customer.name ?? null };
+}
 
 const STATUS_ORDER: Record<string, number> = {
   active: 0,
@@ -92,6 +102,48 @@ export async function listSubscriptions(customerId: string): Promise<CustomerSub
   const subscriptions = await stripe.subscriptions
     .list({ customer: customerId, status: "all", limit: 100 })
     .autoPagingToArray({ limit: 1000 });
+  return toCustomerSubscriptions(subscriptions);
+}
+
+/** Espace admin : tous les abonnements du compte Stripe (tous clients, tous statuts), avec le client. */
+export async function listAllSubscriptions(): Promise<CustomerSubscription[]> {
+  const subscriptions = await stripe.subscriptions
+    .list({ status: "all", limit: 100, expand: ["data.customer"] })
+    .autoPagingToArray({ limit: 5000 });
+  return toCustomerSubscriptions(subscriptions, true);
+}
+
+/** Espace admin : client propriétaire d'un abonnement (pour afficher son email sur le compte). */
+export async function getSubscriptionCustomer(subId: string): Promise<SubscriptionCustomer | null> {
+  try {
+    const sub = await stripe.subscriptions.retrieve(subId, { expand: ["customer"] });
+    return toCustomer(sub.customer);
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeInvalidRequestError) return null;
+    throw error;
+  }
+}
+
+/** Statut Stripe actuel d'un abonnement (vérifié côté serveur avant une action admin). */
+export async function getSubscriptionStatus(subId: string): Promise<Stripe.Subscription.Status> {
+  return (await stripe.subscriptions.retrieve(subId)).status;
+}
+
+/**
+ * Espace admin : résilie immédiatement l'abonnement (sans prorata). Irréversible.
+ * Renvoie false s'il était déjà terminé.
+ */
+export async function cancelSubscriptionNow(subId: string): Promise<boolean> {
+  const sub = await stripe.subscriptions.retrieve(subId);
+  if (sub.status === "canceled" || sub.status === "incomplete_expired") return false;
+  await stripe.subscriptions.cancel(subId);
+  return true;
+}
+
+async function toCustomerSubscriptions(
+  subscriptions: Stripe.Subscription[],
+  withCustomer = false,
+): Promise<CustomerSubscription[]> {
   subscriptions.sort(
     (a, b) => (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99) || b.created - a.created,
   );
@@ -105,13 +157,17 @@ export async function listSubscriptions(customerId: string): Promise<CustomerSub
       ),
     ),
   ];
-  const products = productIds.length
-    ? await stripe.products.list({ ids: productIds, limit: 100 })
-    : { data: [] as Stripe.Product[] };
-  const productNames = new Map(products.data.map((p) => [p.id, p.name]));
+  // L'API produits accepte 100 ids par appel.
+  const chunks: string[][] = [];
+  for (let i = 0; i < productIds.length; i += 100) chunks.push(productIds.slice(i, i + 100));
+  const products = (await Promise.all(chunks.map((ids) => stripe.products.list({ ids, limit: 100 })))).flatMap(
+    (page) => page.data,
+  );
+  const productNames = new Map(products.map((p) => [p.id, p.name]));
 
   return subscriptions.map((sub) => ({
     id: sub.id,
+    ...(withCustomer && { customer: toCustomer(sub.customer) }),
     status: sub.status,
     startDate: sub.start_date,
     cancelAt: sub.cancel_at,

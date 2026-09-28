@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
+import { ADMIN_EMAIL } from "@/lib/admin-email";
 import { env } from "@/lib/env";
 import {
   ensureCenturieToken,
@@ -63,6 +64,9 @@ export const authOptions: NextAuthOptions = {
             : await findUserByEmail(user.email);
         if (!dbUser) throw new Error("Signed-in user not found");
         token.id = dbUser.id;
+        token.provider = account?.provider;
+        // Le compte admin de l'agence n'est pas un client : pas de client Stripe ni de token client.
+        if (dbUser.email === ADMIN_EMAIL) return token;
         // À la connexion : on retrouve le client Stripe existant, sinon on le crée.
         try {
           token.stripeCustomerId = await ensureStripeCustomer(dbUser);
@@ -78,6 +82,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id;
         session.user.stripeCustomerId = token.stripeCustomerId;
+        session.user.provider = token.provider;
       }
       return session;
     },

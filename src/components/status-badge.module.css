@@ -1,0 +1,89 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.sm {
+  font-size: 13.5px;
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.icon path {
+  fill: none;
+  stroke: var(--white);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin: 0 4px;
+  border-radius: var(--radius-full);
+}
+
+/* Vert : connecté */
+.ok {
+  color: var(--status-ok-text);
+}
+.ok .icon circle {
+  fill: var(--status-ok);
+}
+
+/* Orange : erreur à corriger */
+.warn {
+  color: var(--status-warn-text);
+}
+.warn .icon circle {
+  fill: var(--status-warn);
+}
+.warn .icon path {
+  stroke: var(--ink);
+}
+
+/* Rouge : plus actif du tout */
+.danger {
+  color: var(--status-danger-text);
+}
+.danger .icon circle {
+  fill: var(--status-danger);
+}
+
+/* Connexion en cours : point qui pulse */
+.pending {
+  color: var(--charcoal);
+}
+.pending .dot {
+  background: var(--taupe-dark);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+/* En pause / pas connecté */
+.neutral {
+  color: var(--text-secondary);
+}
+.neutral .dot {
+  border: 1.5px solid var(--text-muted);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(139, 130, 116, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(139, 130, 116, 0);
+  }
+}

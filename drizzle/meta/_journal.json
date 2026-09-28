@@ -15,6 +15,13 @@
       "when": 1790356330746,
       "tag": "0001_centurie_token",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790593653449,
+      "tag": "0002_hidden_subscriptions",
+      "breakpoints": true
     }
   ]
 }

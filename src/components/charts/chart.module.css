@@ -1,0 +1,165 @@
+/* Graphiques — une seule série par graphique, en ink (couleur principale du design system) */
+
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.plot {
+  position: relative;
+  width: 100%;
+}
+
+.svg {
+  display: block;
+  overflow: visible;
+  cursor: crosshair;
+}
+
+.svg:focus-visible {
+  outline: 2px solid var(--taupe-dark);
+  outline-offset: 4px;
+}
+
+.grid {
+  stroke: var(--hairline);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.baseline {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.axis {
+  fill: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.line {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.area {
+  fill: var(--ink);
+  fill-opacity: 0.08;
+  stroke: none;
+}
+
+/* Point avec anneau de 2px couleur surface */
+.dot {
+  fill: var(--ink);
+  stroke: var(--white);
+  stroke-width: 2;
+}
+
+.endLabel {
+  fill: var(--charcoal);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.crosshair {
+  stroke: var(--text-muted);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.bar {
+  fill: var(--ink);
+  transition: fill 0.15s;
+}
+
+.barActive {
+  fill: var(--taupe-dark);
+}
+
+.tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--white);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.tooltip strong {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.tooltip span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.empty {
+  margin: 0;
+  padding: var(--space-6) 0;
+  font-size: 14.5px;
+  color: var(--text-muted);
+}
+
+/* Vue tableau */
+
+.tableView summary {
+  width: fit-content;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tableScroll {
+  max-height: 260px;
+  margin-top: var(--space-2);
+  overflow-y: auto;
+  border: 1px solid var(--hairline);
+}
+
+.tableView table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.tableView th,
+.tableView td {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--hairline);
+  text-align: left;
+}
+
+.tableView th {
+  position: sticky;
+  top: 0;
+  background: var(--cream-alt);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.tableView td:last-child,
+.tableView th:last-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

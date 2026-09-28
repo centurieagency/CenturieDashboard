@@ -7,6 +7,7 @@ import {
   addTargetAction,
   backupCodesAction,
   connectAction,
+  deleteAccountAction,
   passwordAction,
   removeTargetAction,
   saveConfigAction,
@@ -331,6 +332,40 @@ export function BackupCodesForm({ subId }: { subId: string }) {
       <Feedback state={state} />
       <button type="submit" className={styles.ghostButton} disabled={pending}>
         {pending ? "Saving…" : "Save codes"}
+      </button>
+    </form>
+  );
+}
+
+// ---------- Suppression (admin) ----------
+
+/** Zone de danger : suppression définitive, confirmée en retapant le @username (ou le sub_id). */
+export function DeleteAccountForm({ subId, username }: { subId: string; username: string | null }) {
+  const [state, action, pending] = useActionState(deleteAccountAction.bind(null, subId, username), IDLE);
+  const [typed, setTyped] = useState("");
+  const expected = username ? `@${username}` : subId;
+  const matches = typed.trim().replace(/^@/, "").toLowerCase() === (username ?? subId).toLowerCase();
+
+  return (
+    <form action={action} className={styles.form}>
+      <div className={styles.field}>
+        <label htmlFor="delete-confirm" className={styles.label}>
+          Type <code className={styles.confirmCode}>{expected}</code> to confirm
+        </label>
+        <input
+          id="delete-confirm"
+          name="confirm"
+          value={typed}
+          onChange={(e) => setTyped(e.target.value)}
+          autoComplete="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          className={styles.input}
+        />
+      </div>
+      <Feedback state={state} />
+      <button type="submit" className={styles.dangerButton} disabled={!matches || pending}>
+        {pending ? "Deleting…" : "Delete account and cancel subscription"}
       </button>
     </form>
   );

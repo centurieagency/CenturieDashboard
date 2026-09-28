@@ -25,5 +25,15 @@ export const users = pgTable("users", {
     .$onUpdate(() => new Date()),
 });
 
+/**
+ * Abonnements retirés du dashboard par l'admin. Stripe ne permet pas de supprimer un abonnement résilié :
+ * on le masque ici, sans rien toucher dans Stripe (réversible en supprimant la ligne).
+ */
+export const hiddenSubscriptions = pgTable("hidden_subscriptions", {
+  subId: text("sub_id").primaryKey(),
+  hiddenBy: text("hidden_by").notNull(),
+  hiddenAt: timestamp("hidden_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

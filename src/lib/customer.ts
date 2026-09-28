@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import { ADMIN_EMAIL } from "@/lib/admin-email";
 import { auth } from "@/lib/auth";
 import { backendToken } from "@/lib/centurie-api";
 import { ensureCenturieToken, ensureStripeCustomer, findUserByEmail } from "@/lib/users";
@@ -16,6 +17,8 @@ import { ensureCenturieToken, ensureStripeCustomer, findUserByEmail } from "@/li
 export const requireCustomer = cache(async (callbackUrl = "/") => {
   const session = await auth();
   if (!session) redirect(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  // Le compte de l'agence n'est pas un client : il a son propre espace.
+  if (session.user.email?.toLowerCase() === ADMIN_EMAIL) redirect("/admin");
 
   let customerId: string | undefined;
   let apiToken: string | undefined;

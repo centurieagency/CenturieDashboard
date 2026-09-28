@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 import { db } from "@/db";
+import { ADMIN_EMAIL } from "@/lib/admin-email";
 import { users } from "@/db/schema";
 import { findOrCreateCustomer } from "@/lib/stripe";
 import { ensureCenturieToken, findUserByEmail, PASSWORD_HASH_ROUNDS } from "@/lib/users";
@@ -29,6 +30,9 @@ export async function signup(input: unknown): Promise<SignupResult> {
 
   const { name, businessName, instagramHandle, password, plan } = parsed.data;
   const email = parsed.data.email.toLowerCase();
+
+  // L'adresse admin ne s'utilise qu'avec Google (adresse vérifiée).
+  if (email === ADMIN_EMAIL) return { ok: false, fieldErrors: { email: "Use Continue with Google on the login page." } };
 
   const existing = await db.query.users.findFirst({
     where: (u, { eq }) => eq(u.email, email),

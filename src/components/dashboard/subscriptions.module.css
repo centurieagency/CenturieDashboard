@@ -67,6 +67,15 @@
   font-size: 15px;
 }
 
+.success {
+  margin: calc(var(--space-12) * -1 + var(--space-6)) 0 var(--space-8);
+  padding: 12px 16px;
+  border: 1px solid var(--status-ok);
+  background: var(--white);
+  font-size: 15px;
+  color: var(--charcoal);
+}
+
 .empty {
   padding: 38px 32px;
   border: 1px solid var(--border-strong);
@@ -312,68 +321,106 @@
   overflow: hidden;
 }
 
-.dotOk,
-.dotWarn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
+/* Espace admin : client propriétaire de l'abonnement */
 
-.dotOk::before,
-.dotWarn::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: var(--radius-full);
-  background: var(--ink);
-}
-
-.dotWarn {
-  color: var(--charcoal);
-  font-weight: 600;
-}
-
-.dotWarn::before {
-  background: transparent;
-  border: 1.5px solid var(--ink);
-}
-
-.dotPending {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--charcoal);
-}
-
-.dotPending::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: var(--radius-full);
-  background: var(--taupe-dark);
-  animation: pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(139, 130, 116, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 0 5px rgba(139, 130, 116, 0);
-  }
-}
-
-.urgentList {
+.customer {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  margin: calc(var(--space-12) * -1 + var(--space-7)) 0 var(--space-12);
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--cream-alt);
+  min-width: 0;
+}
+
+.customerLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.customerEmail {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--charcoal);
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+a.customerEmail:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.customerMeta {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.customerMeta code {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+
+.alertClient {
+  color: var(--text-muted);
+}
+
+/* Bandeaux compacts : un compte à régler, un bouton pour y aller */
+
+.alerts {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: calc(var(--space-12) * -1 + var(--space-6)) 0 var(--space-8);
+  padding: 0;
+}
+
+.alert {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  padding: 10px 10px 10px 16px;
+  border: 1px solid var(--status-warn);
+  background: var(--white);
+}
+
+.alertDanger {
+  border-color: var(--status-danger);
+}
+
+.alertText {
+  flex: 1 1 240px;
+  min-width: 0;
+  font-size: 14.5px;
+  color: var(--text-body);
+}
+
+.alertText strong {
+  color: var(--charcoal);
+}
+
+.alertButton {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.alertButton:hover {
+  background: #000;
+  color: var(--white);
 }
 
 .instagramNote {
@@ -428,4 +475,23 @@
   .main {
     padding: 48px var(--space-5) 80px;
   }
+}
+
+/* Espace admin : suppression depuis la carte */
+.cardDanger {
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--hairline);
+}
+
+/* Espace client : nom de l'abonnement à la place du prix */
+.planLabel {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }

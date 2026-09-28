@@ -168,10 +168,8 @@ export const profilePictureUrl = (username: string) =>
 
 export const listAccounts = (token: string) => request<AccountSummary[]>(token, "/accounts");
 
-export async function getAccountDetailed(token: string, subId: string): Promise<AccountDetailed | undefined> {
-  const accounts = await request<AccountDetailed[]>(token, "/accounts/detailed");
-  return accounts.find((a) => a.sub_id === subId);
-}
+/** Comptes avec leurs infos Instagram, en un seul appel. */
+export const listAccountsDetailed = (token: string) => request<AccountDetailed[]>(token, "/accounts/detailed");
 
 export const getConfig = (token: string, subId: string) =>
   request<AccountConfig>(token, `${account(subId)}/config`);
@@ -181,16 +179,70 @@ export async function getTargets(token: string, subId: string): Promise<Target[]
   return data.targets ?? [];
 }
 
-export const getStats = (token: string, subId: string) =>
-  request<DailyStats>(token, `${account(subId)}/stats`);
+export const getStats = (token: string, subId: string, days = 30) =>
+  request<DailyStats>(token, `${account(subId)}/stats?days=${days}`);
 
-export const getGains = (token: string, subId: string) =>
-  request<DailyGains>(token, `${account(subId)}/gains`);
+export const getGains = (token: string, subId: string, days = 30) =>
+  request<DailyGains>(token, `${account(subId)}/gains?days=${days}`);
+
+export type ProfileSnapshot = {
+  followers: number;
+  followings: number;
+  nb_posts: number;
+  date_checked: string;
+};
+
+/** Historique quotidien du profil (followers, abonnements, posts). */
+export const getProfileStats = (token: string, subId: string, days = 30) =>
+  request<ProfileSnapshot[]>(token, `${account(subId)}/profile-stats?days=${days}`);
+
+export type GainedFollower = {
+  username: string;
+  date: string;
+  attributed_action_date: string | null;
+  /** Cibles par lesquelles ce follower a été touché. */
+  sources: string[];
+};
+
+type Paginated = { pagination?: { total_pages?: number; has_next_page?: boolean } };
+
+/** Nouveaux followers nominatifs (première page : 1 000 max, suffisant sur 90 jours). */
+export async function getFollowersGained(token: string, subId: string, days = 30) {
+  const data = await request<Paginated & { followers?: GainedFollower[]; pagination?: { total_followers?: number } }>(
+    token,
+    `${account(subId)}/followers-gained?days=${days}`,
+  );
+  return { total: data.pagination?.total_followers ?? data.followers?.length ?? 0, followers: data.followers ?? [] };
+}
+
+export type Followback = { username: string; back_date: string; type: string };
+
+/** Retours (follow/like en retour). */
+export async function getFollowbacks(token: string, subId: string, days = 30) {
+  const data = await request<Paginated & { followbacks?: Followback[]; pagination?: { total_followbacks?: number } }>(
+    token,
+    `${account(subId)}/followbacks?days=${days}`,
+  );
+  return { total: data.pagination?.total_followbacks ?? data.followbacks?.length ?? 0, items: data.followbacks ?? [] };
+}
+
+/** Nombre de personnes touchées sur la période (total de la pagination, sans charger les pages suivantes). */
+export async function getProspectsTotal(token: string, subId: string, days = 30): Promise<number> {
+  const data = await request<{ pagination?: { total_prospects?: number } }>(
+    token,
+    `${account(subId)}/prospects-sources?days=${days}`,
+  );
+  return data.pagination?.total_prospects ?? 0;
+}
 
 // ---------- Écriture ----------
 
 export const connectAccount = (token: string, body: { sub_id: string; username: string; password: string }) =>
   request(token, "/manage/connectAccount", { method: "POST", body });
+
+/** Suppression définitive du compte Instagram (le token admin peut supprimer même si l'abonnement est annulé). */
+export const deleteAccount = (token: string, subId: string, username: string) =>
+  request(token, "/manage/delete", { method: "DELETE", body: { sub_id: subId, username } });
 
 export const toggleActive = (token: string, subId: string, isActive: boolean) =>
   request(token, "/manage/toggleActive", { method: "PUT", body: { sub_id: subId, is_active: isActive } });
