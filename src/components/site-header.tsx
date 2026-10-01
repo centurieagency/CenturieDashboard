@@ -11,7 +11,7 @@ export function SiteHeader({ email, admin = false }: { email?: string | null; ad
       <div className={styles.inner}>
         <div className={styles.brand}>
           <Link href={home} className={styles.home} aria-label="Centurie Growth, back to subscriptions">
-            <BrandLockup tone="light" />
+            <BrandLockup tone="dark" />
           </Link>
           {admin && <span className={styles.adminTag}>Admin</span>}
         </div>

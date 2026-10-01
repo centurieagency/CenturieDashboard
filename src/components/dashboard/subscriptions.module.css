@@ -419,7 +419,7 @@ a.customerEmail:hover {
 }
 
 .alertButton:hover {
-  background: #000;
+  background: var(--ink-hover);
   color: var(--white);
 }
 
@@ -459,7 +459,7 @@ a.customerEmail:hover {
 }
 
 .cardButtonPrimary:hover {
-  background: #000;
+  background: var(--ink-hover);
   color: var(--white);
   transform: translateY(-1px);
 }

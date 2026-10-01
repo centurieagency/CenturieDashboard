@@ -13,10 +13,10 @@ const percent = new Intl.NumberFormat("en-US", { style: "percent", maximumFracti
 const signed = new Intl.NumberFormat("en-US", { signDisplay: "exceptZero" });
 
 const ACTIONS = [
-  { key: "follow", label: "Follows" },
-  { key: "post_like", label: "Post likes" },
-  { key: "story_like", label: "Story likes" },
-  { key: "unfollow", label: "Unfollows" },
+  { key: "follow", label: "Follows", color: "var(--data-1)" },
+  { key: "post_like", label: "Post likes", color: "var(--data-2)" },
+  { key: "story_like", label: "Story likes", color: "var(--data-3)" },
+  { key: "unfollow", label: "Unfollows", color: "var(--data-4)" },
 ] as const;
 
 function shortDate(iso: string): string {
@@ -137,9 +137,12 @@ export function Analytics({ href, days, data }: { href: string; days: Period; da
           <>
             <div className={styles.multiples}>
               {actionSeries.map((s) => (
-                <div key={s.key} className={styles.multiple}>
+                <div key={s.key} className={styles.multiple} style={{ "--series": s.color } as React.CSSProperties}>
                   <div className={styles.multipleHead}>
-                    <span className={styles.multipleLabel}>{s.label}</span>
+                    <span className={styles.multipleLabel}>
+                      <i className={styles.legendDot} aria-hidden="true" />
+                      {s.label}
+                    </span>
                     <span className={styles.multipleValue}>{number.format(actionTotals[s.key])}</span>
                   </div>
                   <ColumnChart data={s.points} valueLabel={s.label} height={130} compact />

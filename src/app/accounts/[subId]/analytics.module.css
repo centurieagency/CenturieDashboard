@@ -60,12 +60,12 @@
 }
 
 .periodActive {
-  background: var(--ink);
-  color: var(--white);
+  background: var(--data-primary);
+  color: var(--cream);
 }
 
 .periodActive:hover {
-  color: var(--white);
+  color: var(--cream);
 }
 
 /* Chiffres clés */
@@ -174,9 +174,19 @@
 }
 
 .multipleLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-secondary);
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--series);
 }
 
 .multipleValue {
@@ -221,8 +231,12 @@
   display: block;
   height: 100%;
   min-width: 2px;
-  background: var(--ink);
+  background: var(--data-primary);
   border-radius: 0 4px 4px 0;
+}
+
+.barRow:first-child .barFill {
+  background: var(--data-accent);
 }
 
 .barValue {

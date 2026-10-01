@@ -14,7 +14,7 @@
 }
 
 .trigger:hover {
-  color: #7f1319;
+  color: var(--status-danger-hover);
 }
 
 .box {
@@ -90,7 +90,7 @@
 }
 
 .danger:hover:not(:disabled) {
-  background: #7f1319;
+  background: var(--status-danger-hover);
 }
 
 .danger:disabled {

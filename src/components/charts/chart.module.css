@@ -44,21 +44,21 @@
 
 .line {
   fill: none;
-  stroke: var(--ink);
+  stroke: var(--data-primary);
   stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
 .area {
-  fill: var(--ink);
-  fill-opacity: 0.08;
+  fill: var(--data-primary);
+  fill-opacity: 0.12;
   stroke: none;
 }
 
 /* Point avec anneau de 2px couleur surface */
 .dot {
-  fill: var(--ink);
+  fill: var(--data-accent);
   stroke: var(--white);
   stroke-width: 2;
 }
@@ -77,12 +77,13 @@
 }
 
 .bar {
-  fill: var(--ink);
+  fill: var(--series, var(--data-primary));
   transition: fill 0.15s;
 }
 
 .barActive {
-  fill: var(--taupe-dark);
+  fill: var(--series, var(--data-primary));
+  fill-opacity: 0.6;
 }
 
 .tooltip {

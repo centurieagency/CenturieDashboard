@@ -50,7 +50,7 @@
   fill: var(--status-warn);
 }
 .warn .icon path {
-  stroke: var(--ink);
+  stroke: var(--cream);
 }
 
 /* Rouge : plus actif du tout */

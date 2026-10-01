@@ -1,36 +1,57 @@
-/* Tokens du design system Centurie Growth (tokens.json) */
+/*
+ * Tokens du design system Centurie Growth, en THÈME SOMBRE (« After Hours »).
+ * Les noms d'origine sont gardés pour que tous les composants suivent sans changement, mais les rôles s'inversent :
+ *   --cream      fond de page   : l'encre de la marque (#0b0b0a)
+ *   --white      surfaces       : cartes, champs (noir un peu plus clair)
+ *   --ink        premier plan   : boutons principaux, bordures fortes (crème clair)
+ *   --charcoal   texte principal
+ * Contrastes vérifiés sur le fond et sur les cartes (texte discret >= 6:1).
+ */
 :root {
-  /* Couleurs */
-  --ink: #0b0b0a;
-  --charcoal: #211e1a;
-  --cream: #f6f2ec;
-  --cream-alt: #eee8de;
-  --white: #ffffff;
-  --taupe: #a79e90;
-  --taupe-dark: #8b8274;
-  --taupe-light: #cfc8bc;
-  --text-strong: #33302b;
-  --text-body: #43403a;
-  --text-lead: #4a453f;
-  --text-secondary: #524d46;
-  --text-muted: #6b655d;
-  --text-subtle: #7a746a;
-  --text-on-dark-muted: #c9c4bb;
-  --hairline: rgba(11, 11, 10, 0.08);
-  --border: rgba(11, 11, 10, 0.1);
-  --border-strong: rgba(11, 11, 10, 0.14);
-  --border-control: rgba(11, 11, 10, 0.25);
-  --hairline-on-dark: rgba(255, 255, 255, 0.14);
-  --header-glass: rgba(246, 242, 236, 0.92);
+  color-scheme: dark;
 
-  /* Statuts de compte (hors design system d'origine, validés : texte >= 5.6:1 sur blanc et crème ;
-     toujours accompagnés d'une icône et d'un libellé, jamais la couleur seule) */
-  --status-ok: #1f8a4c;
-  --status-ok-text: #166534;
+  /* Couleurs */
+  --ink: #ece6dc;
+  --ink-hover: #ffffff;
+  --charcoal: #f2ede6;
+  --cream: #0b0b0a;
+  --cream-alt: #1d1c19;
+  --white: #161513;
+  --taupe: #a79e90;
+  --taupe-dark: #a79e90;
+  --taupe-light: #cfc8bc;
+  --text-strong: #e4ded4;
+  --text-body: #d3ccc1;
+  --text-lead: #d9d2c7;
+  --text-secondary: #c9c2b7;
+  --text-muted: #9a9389;
+  --text-subtle: #8a8379;
+  --text-on-dark-muted: #c9c4bb;
+  --hairline: rgba(255, 255, 255, 0.07);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --border-control: rgba(255, 255, 255, 0.26);
+  --hairline-on-dark: rgba(255, 255, 255, 0.14);
+  --header-glass: rgba(11, 11, 10, 0.86);
+
+  /* Données (graphiques) : champagne + menthe, et une couleur par type d'action.
+     Les 4 couleurs d'actions passent le validateur dataviz en mode sombre (toutes paires, fond et cartes) ;
+     chaque graphique nomme aussi sa série en texte. */
+  --data-primary: #d9b66f;
+  --data-accent: #3fd0b0;
+  --data-1: #a6823a; /* follows */
+  --data-2: #12a58d; /* post likes */
+  --data-3: #e5657b; /* story likes */
+  --data-4: #1894e1; /* unfollows */
+
+  /* Statuts de compte (toujours avec une icône et un libellé, jamais la couleur seule) */
+  --status-ok: #3fbf74;
+  --status-ok-text: #6fd69a;
   --status-warn: #e8830c;
-  --status-warn-text: #9a4a00;
-  --status-danger: #c8262e;
-  --status-danger-text: #a3191f;
+  --status-warn-text: #f0a24a;
+  --status-danger: #e5484f;
+  --status-danger-text: #ff7f84;
+  --status-danger-hover: #ffa3a6;
 
   /* Familles (variables posées par next/font dans layout.tsx) */
   --font-display: var(--font-poppins), sans-serif;

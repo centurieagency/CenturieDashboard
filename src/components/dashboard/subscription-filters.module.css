@@ -100,8 +100,8 @@
 }
 
 .option:has(.radio:checked) {
-  background: var(--ink);
-  color: var(--white);
+  background: var(--data-primary);
+  color: var(--cream);
 }
 
 .option:has(.radio:focus-visible) {
