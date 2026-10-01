@@ -33,7 +33,7 @@ export default async function SignupPage() {
           aria-hidden
         />
         <div className={styles.asideTop}>
-          <BrandLockup tone="dark" />
+          <BrandLockup tone="dark" size="lg" />
           <Link href="/login" className={styles.lightGhostButton}>
             Log in
           </Link>

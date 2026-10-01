@@ -39,7 +39,39 @@
   color: var(--taupe);
 }
 
+/* Grand format (connexion, inscription) : picto et « Growth » à l'échelle du logotype */
+.lg {
+  gap: var(--space-3);
+}
+
+.lg .mark {
+  width: 48px;
+}
+
+.lg .wordmark {
+  font-size: 28px;
+  line-height: 1.05;
+}
+
+.lg .script {
+  margin-top: -1px;
+  font-size: 27px;
+  line-height: 0.95;
+}
+
 @media (max-width: 767px) {
+  .lg .mark {
+    width: 40px;
+  }
+
+  .lg .wordmark {
+    font-size: 23px;
+  }
+
+  .lg .script {
+    font-size: 22px;
+  }
+
   .mark {
     width: 26px;
   }

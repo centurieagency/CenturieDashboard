@@ -38,7 +38,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           className={styles.watermark}
           aria-hidden
         />
-        <BrandLockup tone="dark" />
+        <BrandLockup tone="dark" size="lg" />
         <div className={styles.pitch}>
           <span className={styles.eyebrowOnDark}>Client space</span>
           <h2 className={styles.pitchTitle}>Followers were never the point.</h2>
