@@ -1,5 +1,8 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
+import { after } from "next/server";
+
 import { env } from "@/lib/env";
 
 /**
@@ -156,9 +159,27 @@ export type InstagramProfile = {
   is_verified: boolean | null;
 };
 
-/** Profil Instagram public : endpoint à privilégier (GET /instagram/username). */
-export const getInstagramProfile = (token: string, username: string) =>
-  request<InstagramProfile>(token, `/instagram/username?username=${encodeURIComponent(username)}`);
+/**
+ * Profil Instagram public (GET /instagram/username), mis en cache 6 h : l'API met jusqu'à 60 s à le
+ * récupérer. Données publiques, donc une entrée par username partagée par tous (lu avec le jeton admin).
+ * Une fois périmé, le cache sert l'ancien profil et se met à jour en arrière-plan. Les erreurs ne sont pas mises en cache.
+ */
+const cachedInstagramProfile = unstable_cache(
+  (username: string) =>
+    request<InstagramProfile>(env.CENTURIE_API_TOKEN, `/instagram/username?username=${encodeURIComponent(username)}`),
+  ["instagram-profile"],
+  { revalidate: 6 * 3600 },
+);
+
+/**
+ * Profil Instagram sans bloquer la page : on attend au plus `waitMs`, sinon null (la page se rabat sur
+ * les statistiques de profil). L'appel continue après la réponse (`after`) pour remplir le cache.
+ */
+export function getInstagramProfile(username: string, waitMs = 2000): Promise<InstagramProfile | null> {
+  const pending = cachedInstagramProfile(username);
+  after(() => pending.then(() => undefined, () => undefined));
+  return Promise.race([pending, new Promise<null>((resolve) => setTimeout(() => resolve(null), waitMs))]);
+}
 
 /** Photo de profil publique (image, sans token) : utilisable directement dans une balise <img>. */
 export const profilePictureUrl = (username: string) =>

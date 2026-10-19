@@ -48,7 +48,7 @@ export async function loadCustomerAccounts(token: string | undefined): Promise<A
     const profiles = await Promise.all(
       accounts.map((a) =>
         a.username
-          ? getInstagramProfile(token, a.username).catch((error: unknown) => {
+          ? getInstagramProfile(a.username).catch((error: unknown) => {
               console.error("Instagram profile lookup failed", error);
               return null;
             })

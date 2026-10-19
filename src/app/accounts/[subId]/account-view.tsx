@@ -132,7 +132,7 @@ export async function AccountView({
   const username = summary.username;
   const [profileR, configR, targetsR, statsR, gainsR, profileStatsR, followersR, followbacksR, prospectsR, recentR] =
     await Promise.allSettled([
-      getInstagramProfile(token, username),
+      getInstagramProfile(username),
       getConfig(token, subId),
       getTargets(token, subId),
       getStats(token, subId, days),
