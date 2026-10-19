@@ -1,5 +1,7 @@
 "use client";
 
+import { useId } from "react";
+
 import styles from "./chart.module.css";
 import {
   dayTime,
@@ -16,7 +18,8 @@ import { DataTable } from "./data-table";
 const PAD = { top: 16, right: 56, bottom: 28, left: 52 };
 
 /**
- * Courbe d'une seule série (trait 2px, lavis à 10 %, point final avec anneau).
+ * Courbe d'une seule série (trait 2px, lavis en dégradé, point final avec anneau).
+ * `projection` : suite estimée, tracée en pointillés depuis le dernier point réel.
  * Axe Y hors zéro : on montre l'évolution, pas la grandeur absolue.
  * Survol : réticule qui s'aligne sur le jour le plus proche ; clavier : flèches.
  */
@@ -24,22 +27,30 @@ export function LineChart({
   data,
   valueLabel,
   height = 240,
+  projection = [],
+  showTable = true,
+  zeroBased = false,
 }: {
   data: Point[];
   valueLabel: string;
   height?: number;
+  projection?: Point[];
+  showTable?: boolean;
+  /** Axe Y depuis zéro : pour des volumes (actions), où une petite baisse ne doit pas paraître dramatique. */
+  zeroBased?: boolean;
 }) {
+  const gradientId = `area-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const [ref, width] = useWidth<HTMLDivElement>();
   const { active, setActive, onKeyDown, onBlur } = useKeyboardIndex(data.length);
 
   if (data.length < 2) return <p className={styles.empty}>Not enough data for this period yet.</p>;
 
-  const values = data.map((d) => d.value);
-  const ticks = niceTicks(Math.min(...values), Math.max(...values));
+  const values = [...data, ...projection].map((d) => d.value);
+  const ticks = niceTicks(zeroBased ? 0 : Math.min(...values), Math.max(...values));
   const yMin = ticks[0]!;
   const yMax = ticks.at(-1)!;
   const t0 = dayTime(data[0]!.date);
-  const t1 = dayTime(data.at(-1)!.date);
+  const t1 = dayTime((projection.at(-1) ?? data.at(-1)!).date);
   const innerW = Math.max(0, width - PAD.left - PAD.right);
   const innerH = height - PAD.top - PAD.bottom;
   const x = (d: Point) => PAD.left + ((dayTime(d.date) - t0) / Math.max(1, t1 - t0)) * innerW;
@@ -48,8 +59,12 @@ export function LineChart({
   const line = data.map((d, i) => `${i ? "L" : "M"}${x(d).toFixed(1)},${y(d.value).toFixed(1)}`).join("");
   const area = `${line}L${x(data.at(-1)!).toFixed(1)},${PAD.top + innerH}L${x(data[0]!).toFixed(1)},${PAD.top + innerH}Z`;
   const last = data.at(-1)!;
+  const projLine = projection.length
+    ? [last, ...projection].map((d, i) => `${i ? "L" : "M"}${x(d).toFixed(1)},${y(d.value).toFixed(1)}`).join("")
+    : "";
   const hovered = active !== null ? data[active] : undefined;
-  const xLabels = [data[0]!, data[Math.floor((data.length - 1) / 2)]!, last];
+  // Date du milieu seulement si la place le permet (sinon elle chevauche les extrémités sur mobile).
+  const xLabels = innerW > 320 ? [data[0]!, data[Math.floor((data.length - 1) / 2)]!, last] : [data[0]!, last];
 
   function onPointerMove(e: React.PointerEvent<SVGSVGElement>) {
     const box = e.currentTarget.getBoundingClientRect();
@@ -90,14 +105,21 @@ export function LineChart({
                 key={`${d.date}-${i}`}
                 x={x(d)}
                 y={height - 8}
-                textAnchor={i === 0 ? "start" : i === 2 ? "end" : "middle"}
+                textAnchor={i === 0 ? "start" : i === xLabels.length - 1 ? "end" : "middle"}
                 className={styles.axis}
               >
                 {formatDay(d.date)}
               </text>
             ))}
-            <path d={area} className={styles.area} />
+            <defs>
+              <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stopColor="var(--data-primary)" stopOpacity="0.32" />
+                <stop offset="100%" stopColor="var(--data-primary)" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d={area} fill={`url(#${gradientId})`} />
             <path d={line} className={styles.line} />
+            {projLine && <path d={projLine} className={styles.projection} />}
             <circle cx={x(last)} cy={y(last.value)} r={4} className={styles.dot} />
             <text x={x(last) + 10} y={y(last.value)} dy="0.32em" className={styles.endLabel}>
               {formatCompact(last.value)}
@@ -121,7 +143,7 @@ export function LineChart({
           </div>
         )}
       </div>
-      <DataTable data={data} valueLabel={valueLabel} />
+      {showTable && <DataTable data={data} valueLabel={valueLabel} />}
     </div>
   );
 }

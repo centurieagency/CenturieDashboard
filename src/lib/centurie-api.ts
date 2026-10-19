@@ -226,6 +226,19 @@ export async function getFollowbacks(token: string, subId: string, days = 30) {
   return { total: data.pagination?.total_followbacks ?? data.followbacks?.length ?? 0, items: data.followbacks ?? [] };
 }
 
+export type RecentAction = {
+  id: number;
+  interactor_username: string;
+  action_type: "follow" | "post_like" | "story_like" | "unfollow" | string;
+  action_date: string;
+};
+
+/** Dernières actions effectuées par le compte (première page, les plus récentes d'abord). */
+export async function getRecentActions(token: string, subId: string, limit = 12): Promise<RecentAction[]> {
+  const data = await request<{ actions?: RecentAction[] }>(token, `${account(subId)}/actions`);
+  return (data.actions ?? []).slice(0, limit);
+}
+
 /** Nombre de personnes touchées sur la période (total de la pagination, sans charger les pages suivantes). */
 export async function getProspectsTotal(token: string, subId: string, days = 30): Promise<number> {
   const data = await request<{ pagination?: { total_prospects?: number } }>(

@@ -84,7 +84,7 @@ export function Analytics({ href, days, data }: { href: string; days: Period; da
           {PERIODS.map((p) => (
             <Link
               key={p}
-              href={`${href}?days=${p}`}
+              href={`${href}${href.includes("?") ? "&" : "?"}days=${p}`}
               scroll={false}
               className={p === days ? styles.periodActive : styles.period}
               aria-current={p === days ? "page" : undefined}

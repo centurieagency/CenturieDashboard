@@ -1,0 +1,82 @@
+.tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--white);
+}
+
+.tab,
+.tabOn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.tab svg,
+.tabOn svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tab {
+  color: var(--text-secondary);
+}
+
+.tab:hover {
+  color: var(--charcoal);
+  background: var(--cream-alt);
+}
+
+/* Onglet actif : teinte et halo de l'accent */
+.tabOn {
+  color: var(--charcoal);
+  border-color: color-mix(in srgb, var(--data-accent) 55%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--data-accent) 26%, transparent), color-mix(in srgb, var(--data-accent) 10%, transparent));
+  box-shadow:
+    0 0 24px color-mix(in srgb, var(--data-accent) 28%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--data-accent) 40%, transparent);
+}
+
+.tabOn svg {
+  color: var(--data-accent);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--data-accent);
+  box-shadow: 0 0 10px var(--data-accent);
+}
+
+@media (max-width: 640px) {
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+  }
+
+  .tab,
+  .tabOn {
+    justify-content: center;
+    padding: 0 10px;
+  }
+}

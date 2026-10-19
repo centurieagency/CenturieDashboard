@@ -495,3 +495,29 @@ a.customerEmail:hover {
   text-transform: uppercase;
   color: var(--text-muted);
 }
+
+/* Redesign : coins arrondis et halo discret */
+.card,
+.empty,
+.notice,
+.alert,
+.success,
+.customer,
+.igStats {
+  border-radius: var(--radius-card);
+}
+
+.card {
+  border-color: var(--border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0) 60%),
+    var(--white);
+}
+
+.igStats {
+  overflow: hidden;
+}
+
+.avatar {
+  border: 2px solid var(--data-accent);
+}

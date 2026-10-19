@@ -100,7 +100,7 @@
 }
 
 .option:has(.radio:checked) {
-  background: var(--data-primary);
+  background: var(--selection, var(--data-primary));
   color: var(--cream);
 }
 
@@ -160,3 +160,7 @@
     padding: 0 10px;
   }
 }
+
+/* Redesign : pilules */
+.segmented { border-radius: 999px; overflow: hidden; }
+.searchInput { border-radius: 999px; }

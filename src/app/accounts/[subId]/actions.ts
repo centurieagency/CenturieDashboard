@@ -276,3 +276,46 @@ export async function hideSubscriptionAction(subId: string): Promise<ActionState
   revalidatePath("/");
   return { status: "success", message: "Removed from the dashboard." };
 }
+
+/**
+ * Ajout de plusieurs cibles d'un coup (admin) : @usernames séparés par des retours à la ligne, virgules ou espaces.
+ * Les cibles déjà présentes sont ignorées sans erreur ; 50 au maximum par envoi.
+ */
+export async function addTargetsBulkAction(subId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
+  if (!isAdminSession(await auth())) return NOT_ALLOWED;
+  if (!subIdSchema.safeParse(subId).success) return { status: "error", message: "Unknown subscription." };
+
+  const names = [
+    ...new Set(
+      String(form.get("usernames") ?? "")
+        .split(/[\s,;]+/)
+        .map((v) => v.trim().replace(/^@/, "").toLowerCase())
+        .filter(Boolean),
+    ),
+  ];
+  const valid = names.filter((n) => /^[a-z0-9._]{1,30}$/.test(n));
+  const invalid = names.length - valid.length;
+  if (valid.length === 0) return { status: "error", message: "Enter at least one valid Instagram username." };
+  if (valid.length > 50) return { status: "error", message: "Add 50 accounts at most at a time." };
+
+  let added = 0;
+  let already = 0;
+  let failed = 0;
+  for (const name of valid) {
+    try {
+      await addTarget(env.CENTURIE_API_TOKEN, subId, name);
+      added++;
+    } catch (error) {
+      if (error instanceof CenturieApiError && error.status === 409) already++;
+      else failed++;
+    }
+  }
+  revalidatePath(`/admin/accounts/${subId}`);
+  revalidatePath(`/accounts/${subId}`);
+
+  const parts = [`${added} added`];
+  if (already) parts.push(`${already} already in targets`);
+  if (invalid) parts.push(`${invalid} invalid`);
+  if (failed) parts.push(`${failed} failed`);
+  return { status: failed && !added ? "error" : "success", message: parts.join(" · ") + "." };
+}

@@ -14,6 +14,7 @@ import {
   getInstagramProfile,
   getProfileStats,
   getProspectsTotal,
+  getRecentActions,
   getStats,
   getTargets,
   listAccounts,
@@ -23,22 +24,24 @@ import {
 } from "@/lib/centurie-api";
 import type { SubscriptionCustomer } from "@/lib/stripe";
 import styles from "./account.module.css";
-import { Analytics, PERIODS, type Period } from "./analytics";
+import { AccountTabs, type Tab } from "./account-tabs";
+import { PERIODS, type Period } from "./analytics";
+import { Analysis } from "./analysis";
+import { Overview } from "./overview";
+import { Statistics } from "./statistics";
+import { RemovalPanel, TargetsTable, TargetTools, type TargetRow } from "./targets-ui";
 import {
   ActiveToggle,
-  AddTargetForm,
   AutoRefresh,
   BackupCodesForm,
   ConfigForm,
   ConnectForm,
   DeleteAccountForm,
   PasswordForm,
-  RemoveTargetButton,
   TotpKeyForm,
 } from "./forms";
 
 const number = new Intl.NumberFormat("en-US");
-const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
 
 function settled<T>(result: PromiseSettledResult<T>): T | null {
   if (result.status === "fulfilled") return result.value;
@@ -61,6 +64,7 @@ export const isSubId = (value: string) => /^sub_[A-Za-z0-9]+$/.test(value);
 export async function AccountView({
   subId,
   days,
+  tab = "overview",
   token,
   basePath,
   email,
@@ -68,6 +72,7 @@ export async function AccountView({
 }: {
   subId: string;
   days: Period;
+  tab?: Tab;
   token: string;
   basePath: "" | "/admin";
   email?: string | null;
@@ -75,6 +80,7 @@ export async function AccountView({
   customer?: SubscriptionCustomer | null;
 }) {
   const admin = basePath === "/admin";
+  if (!admin && tab === "analysis") tab = "overview";
   // Les clients voient tout mais ne modifient rien : seul l'admin a les formulaires (et les actions le vérifient).
   const readOnly = !admin;
   const shell = (children: React.ReactNode) => (
@@ -124,7 +130,7 @@ export async function AccountView({
   }
 
   const username = summary.username;
-  const [profileR, configR, targetsR, statsR, gainsR, profileStatsR, followersR, followbacksR, prospectsR] =
+  const [profileR, configR, targetsR, statsR, gainsR, profileStatsR, followersR, followbacksR, prospectsR, recentR] =
     await Promise.allSettled([
       getInstagramProfile(token, username),
       getConfig(token, subId),
@@ -135,6 +141,7 @@ export async function AccountView({
       getFollowersGained(token, subId, days),
       getFollowbacks(token, subId, days),
       getProspectsTotal(token, subId, days),
+      getRecentActions(token, subId, 20),
     ]);
   const profile = settled(profileR);
   // Pas encore de configuration (compte tout juste connecté) : on part des valeurs par défaut, le PUT la créera.
@@ -152,152 +159,217 @@ export async function AccountView({
   const isActive = summary.is_active !== false;
   const expert = summary.expert === true;
 
+  const href = `${basePath}/accounts/${subId}`;
+
+  // Admin, onglets Targets et Analysis : conversions par cible sur 90 jours (score relatif 0-100).
+  const needsScores = admin && (tab === "targets" || tab === "analysis");
+  const followers90 = needsScores
+    ? await getFollowersGained(token, subId, 90).catch((error: unknown) => {
+        console.error("Centurie API read failed", error);
+        return null;
+      })
+    : null;
+  const conversions = new Map<string, number>();
+  for (const f of followers90?.followers ?? []) for (const src of f.sources) conversions.set(src, (conversions.get(src) ?? 0) + 1);
+  const maxConversions = Math.max(1, ...conversions.values());
+  const targetRows: TargetRow[] = (targets ?? [])
+    .map((t) => {
+      const conv = conversions.get(t.username) ?? 0;
+      return {
+        username: t.username,
+        fullName: t.full_name,
+        followers: t.followers,
+        isPrivate: !!t.is_private,
+        pending: t.accepted === false,
+        avatar: profilePictureUrl(t.username),
+        ...(admin && followers90 ? { conversions: conv, score: Math.round((conv / maxConversions) * 100) } : {}),
+      };
+    })
+    .sort((a, b) => (admin && followers90 ? (b.conversions ?? 0) - (a.conversions ?? 0) : 0) || (b.followers ?? 0) - (a.followers ?? 0));
+  const notice = (status.tone === "warn" || status.tone === "danger") && (readOnly ? status.clientHelp : status.help);
+
   return shell(
     <>
-      <div className={styles.headRow}>
-        <div className={styles.identity}>
-          <Image
-            src={profilePictureUrl(username)}
-            alt={`Profile picture of @${username}`}
-            width={88}
-            height={88}
-            className={styles.avatar}
-            priority
-          />
-          <div className={styles.head}>
-            <span className={styles.eyebrow}>Instagram account</span>
-            <h1 className={styles.title}>
-              @{username}
-              {profile?.is_verified && <span className={styles.verified}>Verified</span>}
-            </h1>
-            <div className={styles.metaRow}>
-              {profile?.full_name && <span>{profile.full_name}</span>}
-              {profile?.follower_count != null && (
-                <span>
-                  {compact.format(profile.follower_count)} followers ·{" "}
-                  {compact.format(profile.following_count ?? 0)} following · {number.format(profile.media_count ?? 0)}{" "}
-                  posts
-                </span>
-              )}
-              <StatusBadge tone={shown.tone} label={shown.label} />
-              <span>{expert ? "Expert mode" : "Normal mode"}</span>
-              <code className={styles.subId}>{subId}</code>
-            </div>
-            {profile?.biography && <p className={styles.bio}>{profile.biography}</p>}
+      <div className={styles.topRow}>
+        <div className={styles.miniIdentity}>
+          <Image src={profilePictureUrl(username)} alt="" width={40} height={40} className={styles.miniAvatar} />
+          <div>
+            <span className={styles.miniHandle}>@{username}</span>
+            <StatusBadge tone={shown.tone} label={shown.label} size="sm" />
           </div>
         </div>
-        {admin && !isConnecting && <ActiveToggle subId={subId} isActive={isActive} />}
+        <AccountTabs href={href} tab={tab} days={days} admin={admin} />
       </div>
 
-      {(status.tone === "warn" || status.tone === "danger") && (readOnly ? status.clientHelp : status.help) && (
+      {notice && (
         <p
           role="alert"
           className={`${styles.notice} ${status.tone === "danger" ? styles.noticeDanger : styles.noticeWarn}`}
         >
-          <StatusBadge tone={status.tone} label={`${status.label}.`} /> {readOnly ? status.clientHelp : status.help}
+          <StatusBadge tone={status.tone} label={`${status.label}.`} /> {notice}
         </p>
       )}
 
-      {isConnecting ? (
-        <ConnectingPanel username={username} readOnly={readOnly} />
-      ) : (
-        <Analytics
-          href={`${basePath}/accounts/${subId}`}
-          days={days}
+      {tab === "overview" &&
+        (isConnecting ? (
+          <ConnectingPanel username={username} readOnly={readOnly} />
+        ) : (
+          <Overview
+            href={href}
+            days={days}
+            data={{
+              username,
+              profile,
+              status: shown,
+              expert,
+              profileStats: settled(profileStatsR),
+              gains: settled(gainsR),
+              stats: settled(statsR),
+              prospects: settled(prospectsR),
+              followers: settled(followersR),
+              recentActions: settled(recentR),
+            }}
+          />
+        ))}
+
+      {tab === "statistics" &&
+        (isConnecting ? (
+          <ConnectingPanel username={username} readOnly={readOnly} />
+        ) : (
+          <Statistics
+            href={`${href}?tab=statistics`}
+            days={days}
+            data={{
+              stats: settled(statsR),
+              gains: settled(gainsR),
+              profileStats: settled(profileStatsR),
+              followers: settled(followersR),
+            }}
+          />
+        ))}
+
+      {tab === "targets" && (
+        <div className={styles.tabStack}>
+          {admin && <TargetTools subId={subId} analysisHref={`${href}?tab=analysis`} />}
+          {targets === null ? (
+            <p className={styles.error}>Targets are unavailable right now.</p>
+          ) : targets.length === 0 ? (
+            <p className={styles.muted}>No targets yet.</p>
+          ) : (
+            <TargetsTable subId={subId} rows={targetRows} admin={admin} />
+          )}
+          {admin && followers90 && targetRows.length > 0 && <RemovalPanel subId={subId} rows={targetRows} />}
+        </div>
+      )}
+
+      {tab === "analysis" && admin && (
+        <Analysis
           data={{
-            followerCount: profile?.follower_count ?? null,
-            stats: settled(statsR),
-            gains: settled(gainsR),
-            profileStats: settled(profileStatsR),
-            followers: settled(followersR),
-            followbacks: settled(followbacksR),
-            prospects: settled(prospectsR),
+            subId,
+            targetsHref: `${href}?tab=targets`,
+            settingsHref: `${href}?tab=settings`,
+            username,
+            targetsCount: targets?.length ?? null,
+            weakTargets: followers90 ? targetRows.filter((r) => (r.conversions ?? 0) === 0).length : null,
+            follows: Object.values(settled(statsR) ?? {}).reduce((sum, d) => sum + (d.follow ?? 0), 0),
+            followbacks: settled(followbacksR)?.total ?? null,
+            gainsPerDay: (() => {
+              const g = Object.values(settled(gainsR) ?? {});
+              return g.length ? g.reduce((a, b) => a + b, 0) / g.length : null;
+            })(),
+            statusTone: shown.tone,
+            statusLabel: shown.label,
+            isActive,
+            posts: profile?.media_count ?? settled(profileStatsR)?.at(-1)?.nb_posts ?? null,
+            hasBio: !!profile?.biography,
           }}
         />
       )}
 
-      <div className={admin && (needsPassword || needs2FA) ? styles.columns : undefined}>
-        <section className={styles.panel}>
-          <div className={styles.panelHead}>
-            <h2 className={styles.panelTitle}>Daily limits</h2>
-          </div>
-          {config && readOnly ? (
-            <ReadOnlyLimits config={config} />
-          ) : config ? (
-            <ConfigForm
-              subId={subId}
-              expert={expert}
-              config={{
-                per_day_follow: config.per_day_follow ?? 30,
-                per_day_like_post: config.per_day_like_post ?? 150,
-                per_day_like_story: config.per_day_like_story ?? 250,
-                enabled_follow: config.enabled_follow ?? true,
-                enabled_post_like: config.enabled_post_like ?? true,
-                enabled_like_story: config.enabled_like_story ?? true,
-                enabled_warmup: config.enabled_warmup ?? false,
-              }}
-            />
-          ) : (
-            <p className={styles.muted}>Limits are unavailable right now.</p>
+      {tab === "settings" && (
+        <>
+          {admin && !isConnecting && (
+            <section className={`${styles.panel} ${styles.inlinePanel}`}>
+              <div>
+                <h2 className={styles.panelTitle}>Growth</h2>
+                <p className={styles.muted}>
+                  {isActive ? "Running every day." : "Paused: no actions are sent."}{" "}
+                  {expert ? "Expert mode." : "Standard mode."}
+                </p>
+              </div>
+              <ActiveToggle subId={subId} isActive={isActive} />
+            </section>
           )}
-        </section>
 
-        {/* Identifiants : seulement quand Instagram les a refusés. */}
-        {admin && (needsPassword || needs2FA) && (
-          <section className={styles.panel}>
-            <div className={styles.panelHead}>
-              <h2 className={styles.panelTitle}>Login and security</h2>
-            </div>
-            <div className={styles.stack}>
-              {needsPassword && <PasswordForm subId={subId} />}
-              {needs2FA && (
-                <>
-                  <TotpKeyForm subId={subId} />
-                  <div className={styles.rule} />
-                  <BackupCodesForm subId={subId} />
-                </>
+          <div className={admin && (needsPassword || needs2FA) ? styles.columns : undefined}>
+            <section className={styles.panel}>
+              <div className={styles.panelHead}>
+                <h2 className={styles.panelTitle}>Daily limits</h2>
+              </div>
+              {config && readOnly ? (
+                <ReadOnlyLimits config={config} />
+              ) : config ? (
+                <ConfigForm
+                  subId={subId}
+                  expert={expert}
+                  config={{
+                    per_day_follow: config.per_day_follow ?? 30,
+                    per_day_like_post: config.per_day_like_post ?? 150,
+                    per_day_like_story: config.per_day_like_story ?? 250,
+                    enabled_follow: config.enabled_follow ?? true,
+                    enabled_post_like: config.enabled_post_like ?? true,
+                    enabled_like_story: config.enabled_like_story ?? true,
+                    enabled_warmup: config.enabled_warmup ?? false,
+                  }}
+                />
+              ) : (
+                <p className={styles.muted}>Limits are unavailable right now.</p>
               )}
-            </div>
-          </section>
-        )}
-      </div>
+            </section>
 
-      <section className={styles.panel}>
-        <div className={styles.panelHead}>
-          <h2 className={styles.panelTitle}>Targets</h2>
-          {targets && <span className={styles.panelMeta}>{number.format(targets.length)} accounts</span>}
-        </div>
-        <p className={styles.muted}>
-          We reach people who follow these accounts{admin ? ". Pick accounts whose audience looks like the client's customers." : "."}
-        </p>
-        {admin && <AddTargetForm subId={subId} />}
-        {targets === null ? (
-          <p className={styles.muted}>Targets are unavailable right now.</p>
-        ) : targets.length === 0 ? (
-          <p className={styles.muted}>No targets yet.</p>
-        ) : (
-          <ul className={styles.targets}>
-            {targets.map((t) => (
-              <li key={t.username} className={styles.target}>
-                <div className={styles.targetMain}>
-                  <span className={styles.targetHandle}>@{t.username}</span>
-                  {t.full_name && t.full_name !== t.username && (
-                    <span className={styles.targetName}>{t.full_name}</span>
+            {/* Identifiants : seulement quand Instagram les a refusés. */}
+            {admin && (needsPassword || needs2FA) && (
+              <section className={styles.panel}>
+                <div className={styles.panelHead}>
+                  <h2 className={styles.panelTitle}>Login and security</h2>
+                </div>
+                <div className={styles.stack}>
+                  {needsPassword && <PasswordForm subId={subId} />}
+                  {needs2FA && (
+                    <>
+                      <TotpKeyForm subId={subId} />
+                      <div className={styles.rule} />
+                      <BackupCodesForm subId={subId} />
+                    </>
                   )}
                 </div>
-                <span className={styles.targetMeta}>
-                  {t.followers != null && `${compact.format(t.followers)} followers`}
-                  {t.is_private && " · Private"}
-                  {t.accepted === false && " · Pending review"}
-                </span>
-                {admin && <RemoveTargetButton subId={subId} username={t.username} />}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+              </section>
+            )}
+          </div>
 
-      {admin && <DangerZone subId={subId} username={username} />}
+          <section className={styles.panel}>
+            <div className={styles.panelHead}>
+              <h2 className={styles.panelTitle}>Subscription</h2>
+            </div>
+            <dl className={styles.readList}>
+              <div>
+                <dt>Subscription ID</dt>
+                <dd>
+                  <code className={styles.subId}>{subId}</code>
+                </dd>
+              </div>
+              {profile?.full_name && (
+                <div>
+                  <dt>Account name</dt>
+                  <dd>{profile.full_name}</dd>
+                </div>
+              )}
+            </dl>
+          </section>
+
+          {admin && <DangerZone subId={subId} username={username} />}
+        </>
+      )}
     </>,
   );
 }

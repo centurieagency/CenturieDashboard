@@ -894,3 +894,75 @@ a.customerEmail:hover {
     height: 110px;
   }
 }
+
+/* Redesign : bandeau identité + onglets, panneaux arrondis */
+
+.topRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 20px;
+}
+
+.miniIdentity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.miniIdentity > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.miniAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--data-accent);
+  object-fit: cover;
+  background: var(--cream-alt);
+}
+
+.miniHandle {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--charcoal);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inlinePanel {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel,
+.notice,
+.error,
+.success,
+.customerBar,
+.connectSteps {
+  border-radius: var(--radius-card);
+}
+
+.panel {
+  border-color: var(--border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0) 60%),
+    var(--white);
+}
+
+.tabStack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
