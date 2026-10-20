@@ -1,0 +1,81 @@
+/* Squelette de chargement de la page compte : blocs aux formes de l'overview, reflet qui balaie. */
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.block {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--white);
+}
+
+/* Reflet doré qui traverse chaque bloc */
+.block::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--data-accent) 7%, transparent),
+    color-mix(in srgb, var(--charcoal) 5%, transparent),
+    transparent
+  );
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  to { transform: translateX(100%); }
+}
+
+.customer { height: 50px; }
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.line {
+  height: 11px;
+  border-radius: 6px;
+  margin: 3px 0;
+}
+
+.tabs {
+  width: min(700px, 100%);
+  height: 52px;
+  border-radius: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.profile { grid-column: span 4; height: 470px; }
+.chart { grid-column: span 8; height: 470px; }
+.kpi { grid-column: span 4; height: 158px; }
+.feed { grid-column: span 5; height: 420px; }
+.breakdown { grid-column: span 7; height: 420px; }
+
+@media (max-width: 900px) {
+  .profile,
+  .chart,
+  .feed,
+  .breakdown { grid-column: span 12; }
+  .profile { height: 380px; }
+  .chart { height: 320px; }
+  .kpi { grid-column: span 12; height: 120px; }
+}

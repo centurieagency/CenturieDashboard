@@ -1,6 +1,5 @@
-import Link from "next/link";
-
 import styles from "./account-tabs.module.css";
+import { TransitionLink } from "./tab-transition";
 
 export const TABS = ["overview", "statistics", "targets", "settings", "analysis"] as const;
 export type Tab = (typeof TABS)[number];
@@ -38,10 +37,9 @@ export function AccountTabs({ href, tab, days, admin }: { href: string; tab: Tab
   return (
     <nav className={styles.tabs} aria-label="Account sections">
       {visibleTabs(admin).map((t) => (
-        <Link
+        <TransitionLink
           key={t}
           href={`${href}?tab=${t}${days !== 30 ? `&days=${days}` : ""}`}
-          scroll={false}
           className={t === tab ? styles.tabOn : styles.tab}
           aria-current={t === tab ? "page" : undefined}
         >
@@ -50,7 +48,7 @@ export function AccountTabs({ href, tab, days, admin }: { href: string; tab: Tab
           </svg>
           {LABEL[t]}
           {t === tab && <i className={styles.dot} aria-hidden="true" />}
-        </Link>
+        </TransitionLink>
       ))}
     </nav>
   );

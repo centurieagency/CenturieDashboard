@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { TransitionLink } from "./tab-transition";
 
 import { LineChart } from "@/components/charts/line-chart";
 import type { DailyGains, DailyStats, GainedFollower, ProfileSnapshot } from "@/lib/centurie-api";
@@ -28,15 +28,14 @@ function Periods({ href, days }: { href: string; days: Period }) {
   return (
     <nav className={styles.periods} aria-label="Period">
       {([7, 30, 90] as const).map((p) => (
-        <Link
+        <TransitionLink
           key={p}
           href={`${href}&days=${p}`}
-          scroll={false}
           className={p === days ? styles.periodOn : styles.period}
           aria-current={p === days ? "page" : undefined}
         >
           {p} d
-        </Link>
+        </TransitionLink>
       ))}
     </nav>
   );

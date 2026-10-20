@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { TransitionLink } from "./tab-transition";
 
 import { LineChart } from "@/components/charts/line-chart";
 import { StatusBadge } from "@/components/status-badge";
@@ -255,15 +255,14 @@ export function Overview({ data, days, href }: { data: OverviewData; days: Perio
             )}
             <nav className={styles.periods} aria-label="Period">
               {([7, 30, 90] as const).map((p) => (
-                <Link
+                <TransitionLink
                   key={p}
                   href={`${href}?days=${p}`}
-                  scroll={false}
                   className={p === days ? styles.periodOn : styles.period}
                   aria-current={p === days ? "page" : undefined}
                 >
                   {p}d
-                </Link>
+                </TransitionLink>
               ))}
             </nav>
           </div>

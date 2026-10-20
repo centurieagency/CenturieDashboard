@@ -80,3 +80,65 @@
     padding: 0 10px;
   }
 }
+
+/* Chargement d'un onglet ou d'une période : l'onglet actuel reste affiché, estompé, avec un indicateur. */
+.root {
+  display: contents;
+}
+
+/* Tout ce qui suit la ligne des onglets (premier enfant) */
+.root > :not(:first-child) {
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.root[data-pending] > :not(:first-child) {
+  opacity: 0.45;
+  filter: saturate(0.6);
+  pointer-events: none;
+  /* Léger délai : une navigation quasi instantanée ne clignote pas. */
+  transition-delay: 0.12s;
+}
+
+.tabs {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Barre lumineuse qui court sous les onglets */
+.tabs::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--data-accent), transparent) no-repeat;
+  background-size: 40% 100%;
+  background-position: -40% 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.root[data-pending] .tabs::after {
+  opacity: 1;
+  animation: tabProgress 1.1s ease-in-out infinite;
+}
+
+@keyframes tabProgress {
+  from { background-position: -40% 0; }
+  to { background-position: 140% 0; }
+}
+
+.spinner {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: var(--data-accent);
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

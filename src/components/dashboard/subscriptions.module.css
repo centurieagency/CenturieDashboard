@@ -521,3 +521,23 @@ a.customerEmail:hover {
 .avatar {
   border: 2px solid var(--data-accent);
 }
+
+/* Bouton « Manage account » : spinner pendant le chargement de la page du compte */
+.cardButton,
+.cardButtonPrimary {
+  gap: 10px;
+}
+
+.linkSpinner {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: currentColor;
+  animation: linkSpin 0.7s linear infinite;
+}
+
+@keyframes linkSpin {
+  to { transform: rotate(360deg); }
+}

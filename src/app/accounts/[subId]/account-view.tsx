@@ -29,6 +29,7 @@ import { PERIODS, type Period } from "./analytics";
 import { Analysis } from "./analysis";
 import { Overview } from "./overview";
 import { Statistics } from "./statistics";
+import { TabTransition } from "./tab-transition";
 import { RemovalPanel, TargetsTable, TargetTools, type TargetRow } from "./targets-ui";
 import {
   ActiveToggle,
@@ -76,8 +77,8 @@ export async function AccountView({
   token: string;
   basePath: "" | "/admin";
   email?: string | null;
-  /** Espace admin : client propriétaire de l'abonnement. */
-  customer?: SubscriptionCustomer | null;
+  /** Espace admin : client propriétaire de l'abonnement (promesse lancée par la page, en parallèle des appels API). */
+  customer?: Promise<SubscriptionCustomer | null>;
 }) {
   const admin = basePath === "/admin";
   if (!admin && tab === "analysis") tab = "overview";
@@ -130,18 +131,29 @@ export async function AccountView({
   }
 
   const username = summary.username;
+  // Chaque onglet ne charge que ses propres données : changer d'onglet ne relance pas tous les appels.
+  const on = (...tabs: Tab[]) => tabs.includes(tab);
+  const skip = Promise.resolve(null);
+  // Admin, onglets Targets et Analysis : conversions par cible sur 90 jours (score relatif 0-100), en parallèle du reste.
+  const needsScores = admin && on("targets", "analysis");
+  const followers90P = needsScores
+    ? getFollowersGained(token, subId, 90).catch((error: unknown) => {
+        console.error("Centurie API read failed", error);
+        return null;
+      })
+    : skip;
   const [profileR, configR, targetsR, statsR, gainsR, profileStatsR, followersR, followbacksR, prospectsR, recentR] =
     await Promise.allSettled([
-      getInstagramProfile(username),
-      getConfig(token, subId),
-      getTargets(token, subId),
-      getStats(token, subId, days),
-      getGains(token, subId, days),
-      getProfileStats(token, subId, days),
-      getFollowersGained(token, subId, days),
-      getFollowbacks(token, subId, days),
-      getProspectsTotal(token, subId, days),
-      getRecentActions(token, subId, 20),
+      on("overview", "settings", "analysis") ? getInstagramProfile(username) : skip,
+      on("settings") ? getConfig(token, subId) : skip,
+      on("targets", "analysis") ? getTargets(token, subId) : skip,
+      on("overview", "statistics", "analysis") ? getStats(token, subId, days) : skip,
+      on("overview", "statistics", "analysis") ? getGains(token, subId, days) : skip,
+      on("overview", "statistics", "analysis") ? getProfileStats(token, subId, days) : skip,
+      on("overview", "statistics") ? getFollowersGained(token, subId, days) : skip,
+      on("analysis") ? getFollowbacks(token, subId, days) : skip,
+      on("overview") ? getProspectsTotal(token, subId, days) : skip,
+      on("overview") ? getRecentActions(token, subId, 20) : skip,
     ]);
   const profile = settled(profileR);
   // Pas encore de configuration (compte tout juste connecté) : on part des valeurs par défaut, le PUT la créera.
@@ -161,14 +173,7 @@ export async function AccountView({
 
   const href = `${basePath}/accounts/${subId}`;
 
-  // Admin, onglets Targets et Analysis : conversions par cible sur 90 jours (score relatif 0-100).
-  const needsScores = admin && (tab === "targets" || tab === "analysis");
-  const followers90 = needsScores
-    ? await getFollowersGained(token, subId, 90).catch((error: unknown) => {
-        console.error("Centurie API read failed", error);
-        return null;
-      })
-    : null;
+  const followers90 = await followers90P;
   const conversions = new Map<string, number>();
   for (const f of followers90?.followers ?? []) for (const src of f.sources) conversions.set(src, (conversions.get(src) ?? 0) + 1);
   const maxConversions = Math.max(1, ...conversions.values());
@@ -189,7 +194,7 @@ export async function AccountView({
   const notice = (status.tone === "warn" || status.tone === "danger") && (readOnly ? status.clientHelp : status.help);
 
   return shell(
-    <>
+    <TabTransition>
       <div className={styles.topRow}>
         <div className={styles.miniIdentity}>
           <Image src={profilePictureUrl(username)} alt="" width={40} height={40} className={styles.miniAvatar} />
@@ -370,7 +375,7 @@ export async function AccountView({
           {admin && <DangerZone subId={subId} username={username} />}
         </>
       )}
-    </>,
+    </TabTransition>,
   );
 }
 
@@ -445,7 +450,8 @@ function Shell({
 }
 
 /** Espace admin : à qui appartient ce compte. */
-function CustomerBar({ customer }: { customer: SubscriptionCustomer | null }) {
+async function CustomerBar({ customer: customerP }: { customer: Promise<SubscriptionCustomer | null> }) {
+  const customer = await customerP;
   return (
     <div className={styles.customerBar}>
       <span className={styles.customerLabel}>Client</span>

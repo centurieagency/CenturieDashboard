@@ -19,7 +19,8 @@ export default async function AdminAccountPage({ params, searchParams }: PagePro
   const days = parsePeriod(query.days);
   const tab = parseTab(query.tab, true);
 
-  const customer = await getSubscriptionCustomer(subId).catch((error: unknown) => {
+  // Pas d'await : la recherche Stripe tourne pendant les appels à l'API Centurie.
+  const customer = getSubscriptionCustomer(subId).catch((error: unknown) => {
     console.error("Stripe subscription customer lookup failed", error);
     return null;
   });

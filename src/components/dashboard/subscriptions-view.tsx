@@ -8,6 +8,7 @@ import { profilePictureUrl, type AccountSummary } from "@/lib/centurie-api";
 import type { AccountsBySub, LinkedAccount, SubscriptionsResult } from "@/lib/dashboard-data";
 import type { CustomerSubscription, SubscriptionLine } from "@/lib/stripe";
 import { CardDelete } from "./card-delete";
+import { LinkPending } from "./link-pending";
 import { SubscriptionFilters } from "./subscription-filters";
 import styles from "./subscriptions.module.css";
 
@@ -413,6 +414,7 @@ function InstagramRow({
       <StatusBadge tone={status.tone} label={status.label} size="sm" />
       <Link href={href} className={needsFix ? styles.cardButtonPrimary : styles.cardButton}>
         {needsFix ? "Fix the problem" : readOnly ? "View account" : "Manage account"}
+        <LinkPending />
       </Link>
     </div>
   );
