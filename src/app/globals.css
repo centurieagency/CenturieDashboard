@@ -1,48 +1,49 @@
 /*
- * Tokens du design system Centurie Growth, en THÈME SOMBRE (« After Hours »).
+ * Tokens du design system Centurie Growth, en THÈME SOMBRE (« Onyx & Champagne »).
  * Les noms d'origine sont gardés pour que tous les composants suivent sans changement, mais les rôles s'inversent :
- *   --cream      fond de page   : l'encre de la marque (#0b0b0a)
+ *   --cream      fond de page   : noir onyx chaud
  *   --white      surfaces       : cartes, champs (noir un peu plus clair)
  *   --ink        premier plan   : boutons principaux, bordures fortes (crème clair)
  *   --charcoal   texte principal
- * Contrastes vérifiés sur le fond et sur les cartes (texte discret >= 6:1).
+ * Contrastes vérifiés sur les cartes : texte principal >= 15:1, texte discret >= 6:1, nuance de données la plus sombre >= 3:1.
  */
 :root {
   color-scheme: dark;
 
   /* Couleurs */
-  --ink: #ece6dc;
+  --ink: #ede7df;
   --ink-hover: #ffffff;
-  --charcoal: #f2ede6;
-  --cream: #0b0b0a;
-  --cream-alt: #1d1c19;
-  --white: #161513;
-  --taupe: #a79e90;
-  --taupe-dark: #a79e90;
+  --charcoal: #f2eee8;
+  --cream: #0d0b09;
+  --cream-alt: #24211e;
+  --white: #181613;
+  --taupe: #afa38e;
+  --taupe-dark: #afa38e;
   --taupe-light: #cfc8bc;
-  --text-strong: #e4ded4;
-  --text-body: #d3ccc1;
-  --text-lead: #d9d2c7;
-  --text-secondary: #c9c2b7;
-  --text-muted: #9a9389;
-  --text-subtle: #8a8379;
+  --text-strong: #e2ddd8;
+  --text-body: #d2cdc8;
+  --text-lead: #d8d3ce;
+  --text-secondary: #c8c3be;
+  --text-muted: #9c9792;
+  --text-subtle: #8a8580;
   --text-on-dark-muted: #c9c4bb;
   --hairline: rgba(255, 255, 255, 0.07);
   --border: rgba(255, 255, 255, 0.1);
   --border-strong: rgba(255, 255, 255, 0.14);
   --border-control: rgba(255, 255, 255, 0.26);
   --hairline-on-dark: rgba(255, 255, 255, 0.14);
-  --header-glass: rgba(11, 11, 10, 0.86);
+  --header-glass: #0d0b09dd;
 
-  /* Données (graphiques) : champagne + menthe, et une couleur par type d'action.
-     Les 4 couleurs d'actions passent le validateur dataviz en mode sombre (toutes paires, fond et cartes) ;
-     chaque graphique nomme aussi sa série en texte. */
-  --data-primary: #d9b66f;
-  --data-accent: #3fd0b0;
-  --data-1: #a6823a; /* follows */
-  --data-2: #12a58d; /* post likes */
-  --data-3: #e5657b; /* story likes */
-  --data-4: #1894e1; /* unfollows */
+  /* Données (graphiques) : quatre nuances de champagne, et un accent or (sélection, dernière valeur, cible n°1).
+     Chaque graphique nomme aussi sa série en texte. */
+  --data-primary: #e3cea9;
+  --data-accent: #e6be68;
+  --data-1: #e3cea9;
+  --data-2: #bea87f;
+  --data-3: #9d865a;
+  --data-4: #80683b;
+  --target-bar: #b19b73;
+  --selection: #e6be68;
 
   /* Statuts de compte (toujours avec une icône et un libellé, jamais la couleur seule) */
   --status-ok: #3fbf74;
@@ -127,171 +128,4 @@ a:hover {
     transition: none !important;
     animation: none !important;
   }
-}
-
-/*
- * THÈMES HARMONISÉS, À L'ESSAI (sélecteur visible en local uniquement).
- * Chaque thème dérive d'une seule famille de teinte : fond, cartes et textes légèrement teintés,
- * données en 4 nuances d'une même couleur, et un seul accent précieux (sélection, dernière valeur, cible n°1).
- * Contrastes vérifiés sur les cartes : texte principal >= 15:1, texte discret >= 6:1, nuance de données la plus sombre >= 3:1.
- */
-:root[data-palette="onyx-champagne"] { /* Onyx & Champagne */
-  --cream: #0d0b09;
-  --white: #181613;
-  --cream-alt: #24211e;
-  --charcoal: #f2eee8;
-  --text-strong: #e2ddd8;
-  --text-body: #d2cdc8;
-  --text-lead: #d8d3ce;
-  --text-secondary: #c8c3be;
-  --text-muted: #9c9792;
-  --text-subtle: #8a8580;
-  --ink: #ede7df;
-  --taupe-dark: #afa38e;
-  --taupe: #afa38e;
-  --data-primary: #e3cea9;
-  --data-accent: #e6be68;
-  --data-1: #e3cea9;
-  --data-2: #bea87f;
-  --data-3: #9d865a;
-  --data-4: #80683b;
-  --target-bar: #b19b73;
-  --selection: #e6be68;
-  --header-glass: #0d0b09dd;
-}
-:root[data-palette="onyx-sage"] { /* Onyx & Sage */
-  --cream: #090c09;
-  --white: #131714;
-  --cream-alt: #1e231f;
-  --charcoal: #e9f1ea;
-  --text-strong: #d9e0da;
-  --text-body: #c8d0ca;
-  --text-lead: #cfd7d0;
-  --text-secondary: #bfc6c0;
-  --text-muted: #939a94;
-  --text-subtle: #818882;
-  --ink: #e1ebe2;
-  --taupe-dark: #98aa9b;
-  --taupe: #98aa9b;
-  --data-primary: #bbdbc0;
-  --data-accent: #e2bf76;
-  --data-1: #bbdbc0;
-  --data-2: #93b599;
-  --data-3: #6f9476;
-  --data-4: #517659;
-  --target-bar: #87a98d;
-  --selection: #e2bf76;
-  --header-glass: #090c09dd;
-}
-:root[data-palette="midnight-slate"] { /* Midnight Slate */
-  --cream: #070b11;
-  --white: #11161e;
-  --cream-alt: #1c222a;
-  --charcoal: #e5f0fd;
-  --text-strong: #d5dfec;
-  --text-body: #c5cfdc;
-  --text-lead: #cbd5e2;
-  --text-secondary: #bbc5d2;
-  --text-muted: #9099a5;
-  --text-subtle: #7e8793;
-  --ink: #dce9fb;
-  --taupe-dark: #92a8ba;
-  --taupe: #92a8ba;
-  --data-primary: #b1d6f6;
-  --data-accent: #eac992;
-  --data-1: #b1d6f6;
-  --data-2: #88b0d2;
-  --data-3: #648eb2;
-  --data-4: #457094;
-  --target-bar: #7ca3c5;
-  --selection: #eac992;
-  --header-glass: #070b11dd;
-}
-:root[data-palette="noir-bordeaux"] { /* Noir Bordeaux */
-  --cream: #100909;
-  --white: #1c1314;
-  --cream-alt: #291f1f;
-  --charcoal: #faeaea;
-  --text-strong: #ead9da;
-  --text-body: #d9c9ca;
-  --text-lead: #e0d0d0;
-  --text-secondary: #d0c0c0;
-  --text-muted: #a39495;
-  --text-subtle: #918283;
-  --ink: #f8e2e3;
-  --taupe-dark: #bf9a9d;
-  --taupe: #bf9a9d;
-  --data-primary: #febdc4;
-  --data-accent: #ebb896;
-  --data-1: #febdc4;
-  --data-2: #d9959d;
-  --data-3: #b9727b;
-  --data-4: #9a545d;
-  --target-bar: #cc8991;
-  --selection: #ebb896;
-  --header-glass: #100909dd;
-}
-:root[data-palette="graphite-ember"] { /* Graphite & Ember */
-  --cream: #0c0b09;
-  --white: #181614;
-  --cream-alt: #24211f;
-  --charcoal: #f2eeea;
-  --text-strong: #e1ddda;
-  --text-body: #d1cdca;
-  --text-lead: #d7d3d0;
-  --text-secondary: #c7c3c0;
-  --text-muted: #9b9795;
-  --text-subtle: #898583;
-  --ink: #ede6e1;
-  --taupe-dark: #a9a49d;
-  --taupe: #a9a49d;
-  --data-primary: #d8d0c4;
-  --data-accent: #f0834e;
-  --data-1: #d8d0c4;
-  --data-2: #b2a99d;
-  --data-3: #91887b;
-  --data-4: #746a5e;
-  --target-bar: #a69d91;
-  --selection: #f0834e;
-  --header-glass: #0c0b09dd;
-}
-:root[data-palette="deep-teal"] { /* Deep Teal */
-  --cream: #060d0d;
-  --white: #0e1819;
-  --cream-alt: #192425;
-  --charcoal: #e1f2f3;
-  --text-strong: #d1e2e3;
-  --text-body: #c1d2d2;
-  --text-lead: #c7d8d9;
-  --text-secondary: #b7c8c9;
-  --text-muted: #8c9c9d;
-  --text-subtle: #7a8a8a;
-  --ink: #d6edee;
-  --taupe-dark: #8bacab;
-  --taupe: #8bacab;
-  --data-primary: #a3dedd;
-  --data-accent: #eac586;
-  --data-1: #a3dedd;
-  --data-2: #78b8b8;
-  --data-3: #4f9797;
-  --data-4: #2b7979;
-  --target-bar: #6bacab;
-  --selection: #eac586;
-  --header-glass: #060d0ddd;
-}
-:root[data-palette="ember-glow"] { /* Ember Glow : noir chaud et orange braise, inspiré de la référence */
-  --cream: #0c0a09;
-  --white: #15110f;
-  --cream-alt: #211a16;
-  --data-primary: #ff7a2f;
-  --data-accent: #ff7a2f;
-  --data-1: #f0632b;
-  --data-2: #ff9b63;
-  --data-3: #ffbe8f;
-  --data-4: #e9d7c3;
-  --target-bar: #ff9b63;
-  --selection: #ff7a2f;
-  --taupe-dark: #c9a48a;
-  --taupe: #c9a48a;
-  --header-glass: #0c0a09dd;
 }

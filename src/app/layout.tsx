@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Alex_Brush, Inter, Poppins } from "next/font/google";
 import type { ReactNode } from "react";
 
-import { PaletteSwitcher } from "@/components/dev/palette-switcher";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -35,7 +34,6 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       <body>
         <Providers>{children}</Providers>
         {/* Essais de palettes : affiché en local (npm run dev) seulement, jamais en production. */}
-        {process.env.NODE_ENV === "development" && <PaletteSwitcher />}
       </body>
     </html>
   );
