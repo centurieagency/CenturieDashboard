@@ -8,6 +8,10 @@ import { addTargetAction, addTargetsBulkAction, removeTargetAction, type ActionS
 import styles from "./targets.module.css";
 
 const IDLE: ActionState = { status: "idle" };
+
+type FormAction = (prev: ActionState, formData: FormData) => Promise<ActionState>;
+/** Actions injectables : la démo de l'Academy remplace les vraies actions par les siennes. */
+export type TargetActions = { add: FormAction; addMany: FormAction; remove: FormAction };
 const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
 
 export type TargetRow = {
@@ -57,7 +61,15 @@ function Svg({ children }: { children: React.ReactNode }) {
 
 // ---------- Outils d'ajout (admin) ----------
 
-export function TargetTools({ subId, analysisHref }: { subId: string; analysisHref: string }) {
+export function TargetTools({
+  subId,
+  analysisHref,
+  actions,
+}: {
+  subId: string;
+  analysisHref?: string;
+  actions?: TargetActions;
+}) {
   const [tool, setTool] = useState<"one" | "many">("one");
   return (
     <div className={styles.tools}>
@@ -70,18 +82,20 @@ export function TargetTools({ subId, analysisHref }: { subId: string; analysisHr
           <span className={styles.tileIcon}><Svg>{ICON.addMany}</Svg></span>
           Add several accounts
         </button>
-        <Link href={analysisHref} className={styles.tile}>
-          <span className={styles.tileIcon}><Svg>{ICON.smart}</Svg></span>
-          Smart analysis
-        </Link>
+        {analysisHref && (
+          <Link href={analysisHref} className={styles.tile}>
+            <span className={styles.tileIcon}><Svg>{ICON.smart}</Svg></span>
+            Smart analysis
+          </Link>
+        )}
       </div>
-      {tool === "one" ? <AddOne subId={subId} /> : <AddMany subId={subId} />}
+      {tool === "one" ? <AddOne subId={subId} action={actions?.add} /> : <AddMany subId={subId} action={actions?.addMany} />}
     </div>
   );
 }
 
-function AddOne({ subId }: { subId: string }) {
-  const [state, action, pending] = useActionState(addTargetAction.bind(null, subId), IDLE);
+function AddOne({ subId, action: override }: { subId: string; action?: FormAction }) {
+  const [state, action, pending] = useActionState(override ?? addTargetAction.bind(null, subId), IDLE);
   const ref = useResetOnSuccess(state);
   return (
     <form ref={ref} action={action} className={styles.panel}>
@@ -115,8 +129,8 @@ function AddOne({ subId }: { subId: string }) {
   );
 }
 
-function AddMany({ subId }: { subId: string }) {
-  const [state, action, pending] = useActionState(addTargetsBulkAction.bind(null, subId), IDLE);
+function AddMany({ subId, action: override }: { subId: string; action?: FormAction }) {
+  const [state, action, pending] = useActionState(override ?? addTargetsBulkAction.bind(null, subId), IDLE);
   const ref = useResetOnSuccess(state);
   return (
     <form ref={ref} action={action} className={styles.panel}>
@@ -149,8 +163,8 @@ function AddMany({ subId }: { subId: string }) {
 
 // ---------- Tableau des cibles ----------
 
-function RemoveButton({ subId, username }: { subId: string; username: string }) {
-  const [state, action, pending] = useActionState(removeTargetAction.bind(null, subId), IDLE);
+function RemoveButton({ subId, username, action: override }: { subId: string; username: string; action?: FormAction }) {
+  const [state, action, pending] = useActionState(override ?? removeTargetAction.bind(null, subId), IDLE);
   return (
     <form action={action}>
       <input type="hidden" name="target_username" value={username} />
@@ -169,7 +183,8 @@ function RemoveButton({ subId, username }: { subId: string; username: string }) 
 
 /** Photo de profil, ou initiales si l'API n'en a pas pour ce compte. */
 function Avatar({ src, username, size }: { src: string; username: string; size: 28 | 36 }) {
-  const [failed, setFailed] = useState(false);
+  // Sans adresse d'image (cibles fictives de la démo), on affiche directement les initiales.
+  const [failed, setFailed] = useState(!src);
   if (failed)
     return (
       <span className={styles.avatarFallback} style={{ width: size, height: size }} aria-hidden="true">
@@ -193,22 +208,34 @@ function scoreTone(score: number) {
   return score >= 60 ? styles.scoreHigh : score >= 30 ? styles.scoreMid : styles.scoreLow;
 }
 
-export function TargetsTable({ subId, rows, admin }: { subId: string; rows: TargetRow[]; admin: boolean }) {
+export function TargetsTable({
+  subId,
+  rows,
+  admin,
+  removeAction,
+}: {
+  subId: string;
+  rows: TargetRow[];
+  admin: boolean;
+  /** Démo : bouton de retrait sans les scores (réservés à l'admin). */
+  removeAction?: FormAction;
+}) {
+  const removable = admin || !!removeAction;
   const [showAll, setShowAll] = useState(false);
   const PAGE = 10;
   const visible = showAll ? rows : rows.slice(0, PAGE);
 
   return (
     <section className={styles.tableCard} aria-label="Targets">
-      <div className={`${styles.row} ${styles.rowHead} ${admin ? styles.rowAdmin : ""}`} aria-hidden="true">
+      <div className={`${styles.row} ${styles.rowHead} ${admin ? styles.rowAdmin : removable ? styles.rowRemovable : ""}`} aria-hidden="true">
         <span>Rank</span>
         <span>Account</span>
         {admin && <span className={styles.right}>Score</span>}
-        {admin && <span />}
+        {removable && <span />}
       </div>
       <ol className={styles.list}>
         {visible.map((t, i) => (
-          <li key={t.username} className={`${styles.row} ${admin ? styles.rowAdmin : ""}`}>
+          <li key={t.username} className={`${styles.row} ${admin ? styles.rowAdmin : removable ? styles.rowRemovable : ""}`}>
             <span className={styles.rank}>{i + 1}</span>
             <div className={styles.who}>
               <Avatar src={t.avatar} username={t.username} size={36} />
@@ -234,7 +261,7 @@ export function TargetsTable({ subId, rows, admin }: { subId: string; rows: Targ
                 </span>
               </span>
             )}
-            {admin && <RemoveButton subId={subId} username={t.username} />}
+            {removable && <RemoveButton subId={subId} username={t.username} action={removeAction} />}
           </li>
         ))}
       </ol>

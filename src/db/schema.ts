@@ -98,5 +98,25 @@ export const accreditations = pgTable("accreditations", {
   revokedAt: timestamp("revoked_at", { withTimezone: true }),
 });
 
+/**
+ * Liens de paiement Stripe personnels d'un apporteur (un par offre). Chaque abonnement payé par ce lien
+ * porte `sales_rep_id` dans ses métadonnées Stripe : c'est ce qui rattache le client et les commissions.
+ * Désactivés dans Stripe quand l'accréditation n'est plus valable.
+ */
+export const salesPaymentLinks = pgTable(
+  "sales_payment_links",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    plan: planInterest("plan").notNull(),
+    stripeLinkId: text("stripe_link_id").notNull(),
+    url: text("url").notNull(),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.plan] })],
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

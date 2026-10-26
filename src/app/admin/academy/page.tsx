@@ -4,6 +4,7 @@ import Link from "next/link";
 import styles from "@/app/academy/academy.module.css";
 import { SiteHeader } from "@/components/site-header";
 import { listSalesOverview } from "@/lib/academy/academy";
+import { repSales } from "@/lib/academy/partner";
 import { requireAdmin } from "@/lib/admin";
 import { revokeAccreditationAction, revokeInviteAction } from "./actions";
 import { InviteForm } from "./invite-form";
@@ -12,11 +13,34 @@ import table from "./table.module.css";
 export const metadata: Metadata = { title: "Academy · Admin · Centurie Growth" };
 
 const date = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" });
+const usd = (cents: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(cents / 100);
+const monthEn = (ym: string) =>
+  new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${ym}-01T00:00:00Z`));
 
 export default async function AdminAcademyPage() {
   const session = await requireAdmin("/admin/academy");
   const { rows, invites } = await listSalesOverview();
   const accredited = rows.filter((r) => r.accreditation.status === "valid").length;
+
+  // Commissions : uniquement les mois réellement payés (Stripe), rattachés par le lien personnel de l'apporteur.
+  const now = new Date();
+  const thisMonth = now.toISOString().slice(0, 7);
+  const lastMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)).toISOString().slice(0, 7);
+  const commissions = await Promise.all(
+    rows.map(async (r) => {
+      try {
+        const s = await repSales(r.id);
+        const pick = (m: string) => s.months.find((x) => x.month === m)?.cents ?? 0;
+        const active = s.clients.filter((c) => ["active", "trialing", "past_due"].includes(c.status)).length;
+        return { id: r.id, name: r.name ?? r.email, active, clients: s.clients.length, thisMonth: pick(thisMonth), lastMonth: pick(lastMonth), total: s.totalCents };
+      } catch (error) {
+        console.error("Rep sales lookup failed", error);
+        return { id: r.id, name: r.name ?? r.email, active: 0, clients: 0, thisMonth: 0, lastMonth: 0, total: 0, error: true };
+      }
+    }),
+  );
+  const sum = (k: "thisMonth" | "lastMonth" | "total") => commissions.reduce((s, c) => s + c[k], 0);
 
   return (
     <div className={styles.page}>
@@ -144,6 +168,60 @@ export default async function AdminAcademyPage() {
             </div>
           )}
         </section>
+
+        {rows.length > 0 && (
+          <section className={styles.card} aria-labelledby="commissions-title">
+            <h2 id="commissions-title" className={styles.cardTitle}>
+              Commissions to pay
+            </h2>
+            <p className={styles.cardText}>
+              Based on invoices actually paid by each partner&apos;s clients: one transfer per partner per month.
+            </p>
+            <div className={table.scroll}>
+              <table className={table.table}>
+                <thead>
+                  <tr>
+                    <th>Partner</th>
+                    <th>Clients</th>
+                    <th>{monthEn(lastMonth)}</th>
+                    <th>{monthEn(thisMonth)} (so far)</th>
+                    <th>Total paid out</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {commissions.map((c) => (
+                    <tr key={c.id}>
+                      <td>
+                        <b>{c.name}</b>
+                        {"error" in c && <small>Stripe data unavailable</small>}
+                      </td>
+                      <td>
+                        {c.active} active
+                        <small>{c.clients} in total</small>
+                      </td>
+                      <td>
+                        <b>{usd(c.lastMonth)}</b>
+                      </td>
+                      <td>{usd(c.thisMonth)}</td>
+                      <td>{usd(c.total)}</td>
+                    </tr>
+                  ))}
+                  <tr>
+                    <td>
+                      <b>Total</b>
+                    </td>
+                    <td />
+                    <td>
+                      <b>{usd(sum("lastMonth"))}</b>
+                    </td>
+                    <td>{usd(sum("thisMonth"))}</td>
+                    <td>{usd(sum("total"))}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );

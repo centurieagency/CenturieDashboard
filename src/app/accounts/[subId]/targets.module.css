@@ -213,6 +213,7 @@
 }
 
 .rowAdmin { grid-template-columns: 52px minmax(0, 1fr) 90px 34px; }
+.rowRemovable { grid-template-columns: 52px minmax(0, 1fr) 34px; }
 
 .rowHead {
   padding-block: 12px;
@@ -327,6 +328,7 @@
 @media (max-width: 560px) {
   .row { grid-template-columns: 30px minmax(0, 1fr); padding-inline: 12px; }
   .rowAdmin { grid-template-columns: 30px minmax(0, 1fr) 72px 30px; }
+  .rowRemovable { grid-template-columns: 30px minmax(0, 1fr) 30px; }
 }
 
 /* Recommandation de suppression */

@@ -8,6 +8,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { accreditations, salesInvites } from "@/db/schema";
 import { createInvite } from "@/lib/academy/academy";
+import { deactivateRepLinks } from "@/lib/academy/partner";
 import { ADMIN_EMAIL } from "@/lib/admin-email";
 import { isAdminSession } from "@/lib/admin";
 import { auth } from "@/lib/auth";
@@ -63,5 +64,11 @@ export async function revokeAccreditationAction(userId: string) {
     .update(accreditations)
     .set({ revokedAt: new Date() })
     .where(and(eq(accreditations.userId, userId), isNull(accreditations.revokedAt)));
+  // Ses liens de paiement personnels ne doivent plus permettre de signer de nouveaux clients.
+  try {
+    await deactivateRepLinks(userId);
+  } catch (error) {
+    console.error("Deactivating payment links failed", error);
+  }
   revalidatePath("/admin/academy");
 }

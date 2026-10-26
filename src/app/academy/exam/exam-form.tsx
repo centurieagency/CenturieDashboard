@@ -85,9 +85,14 @@ export function ExamForm({
             <p className={styles.lead} style={{ margin: "14px auto 22px" }}>
               Congratulations, you are now an accredited Centurie Growth partner. Certificate {result.certificateNumber}.
             </p>
-            <Link href="/academy/certificate" className={styles.primary}>
-              View my certificate
-            </Link>
+            <div className={styles.actions} style={{ justifyContent: "center" }}>
+              <Link href="/academy/partner" className={styles.primary}>
+                Get my payment links
+              </Link>
+              <Link href="/academy/certificate" className={styles.ghost}>
+                View my certificate
+              </Link>
+            </div>
           </>
         ) : (
           <>

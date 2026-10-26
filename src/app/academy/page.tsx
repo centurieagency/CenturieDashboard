@@ -115,9 +115,14 @@ export default async function AcademyHome() {
                 <span className={`${styles.badge} ${styles.badgeOk}`}>Accrédité</span> jusqu&apos;au {dateFr.format(accreditation.expiresAt)}.
                 Numéro {accreditation.certificateNumber}.
               </p>
-              <Link href="/academy/certificate" className={styles.primary}>
-                Voir mon certificat
-              </Link>
+              <div className={styles.actions}>
+                <Link href="/academy/partner" className={styles.primary}>
+                  Mon espace partenaire →
+                </Link>
+                <Link href="/academy/certificate" className={styles.ghost}>
+                  Mon certificat
+                </Link>
+              </div>
             </>
           ) : (
             <p className={styles.cardText}>

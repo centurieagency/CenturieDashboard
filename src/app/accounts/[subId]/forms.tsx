@@ -19,6 +19,9 @@ import styles from "./account.module.css";
 
 const IDLE: ActionState = { status: "idle" };
 
+/** Action de formulaire injectable (la démo de l'Academy remplace les vraies actions par les siennes). */
+export type FormAction = (prev: ActionState, formData: FormData) => Promise<ActionState>;
+
 function Feedback({ state }: { state: ActionState }) {
   if (state.status === "idle" || !state.message) return null;
   return (
@@ -124,8 +127,8 @@ export function ConnectForm({ subId }: { subId: string }) {
 
 // ---------- Pause / reprise ----------
 
-export function ActiveToggle({ subId, isActive }: { subId: string; isActive: boolean }) {
-  const [state, action, pending] = useActionState(setActiveAction.bind(null, subId), IDLE);
+export function ActiveToggle({ subId, isActive, action: override }: { subId: string; isActive: boolean; action?: FormAction }) {
+  const [state, action, pending] = useActionState(override ?? setActiveAction.bind(null, subId), IDLE);
   return (
     <form action={action} className={styles.toggleForm}>
       <input type="hidden" name="is_active" value={String(!isActive)} />
@@ -149,8 +152,18 @@ type ConfigValues = {
   enabled_warmup: boolean;
 };
 
-export function ConfigForm({ subId, config, expert }: { subId: string; config: ConfigValues; expert: boolean }) {
-  const [state, action, pending] = useActionState(saveConfigAction.bind(null, subId), IDLE);
+export function ConfigForm({
+  subId,
+  config,
+  expert,
+  action: override,
+}: {
+  subId: string;
+  config: ConfigValues;
+  expert: boolean;
+  action?: FormAction;
+}) {
+  const [state, action, pending] = useActionState(override ?? saveConfigAction.bind(null, subId), IDLE);
   const max = expert ? { follow: 90, post: 350, story: 550 } : { follow: 70, post: 250, story: 250 };
 
   const rows = [
