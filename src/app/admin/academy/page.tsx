@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 
 import styles from "@/app/academy/academy.module.css";
 import { SiteHeader } from "@/components/site-header";
 import { listSalesOverview } from "@/lib/academy/academy";
-import { repSales } from "@/lib/academy/partner";
+import { PLAN_LABEL, repSales } from "@/lib/academy/partner";
+import { CopyButton } from "@/app/academy/partner/copy-button";
+import partner from "@/app/academy/partner/partner.module.css";
 import { requireAdmin } from "@/lib/admin";
 import { revokeAccreditationAction, revokeInviteAction } from "./actions";
 import { InviteForm } from "./invite-form";
@@ -42,6 +45,11 @@ export default async function AdminAcademyPage() {
   );
   const sum = (k: "thisMonth" | "lastMonth" | "total") => commissions.reduce((s, c) => s + c[k], 0);
 
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const origin = `${h.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https")}://${host}`;
+  const plans = ["essential", "growth", "signature"] as const;
+
   return (
     <div className={styles.page}>
       <SiteHeader email={session.user.email} admin />
@@ -64,6 +72,27 @@ export default async function AdminAcademyPage() {
             </Link>
           </div>
         </header>
+
+        <section className={styles.card} aria-labelledby="own-links-title">
+          <h2 id="own-links-title" className={styles.cardTitle}>
+            Your payment links
+          </h2>
+          <p className={styles.cardText}>
+            For clients you sign yourself (no partner commission). Always in US dollars, with the Terms checkbox and the 12-month
+            commitment. Partners get their own links in their partner space.
+          </p>
+          <div className={partner.links}>
+            {plans.map((p) => (
+              <div key={p} className={partner.link}>
+                <div>
+                  <b>{PLAN_LABEL[p]}</b>
+                </div>
+                <code>{`${origin}/pay/${p}`}</code>
+                <CopyButton value={`${origin}/pay/${p}`} className={styles.ghost} label="Copy link" copiedLabel="Copied ✓" />
+              </div>
+            ))}
+          </div>
+        </section>
 
         <section className={styles.card} aria-labelledby="invite-title">
           <h2 id="invite-title" className={styles.cardTitle}>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 
 import { accreditationOf, requireAcademy } from "@/lib/academy/academy";
@@ -28,6 +29,13 @@ const STATUS: Record<string, { label: string; tone: string }> = {
   paused: { label: "En pause", tone: styles.badgeWarn! },
 };
 
+async function requestOrigin() {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
+  return `${proto}://${host}`;
+}
+
 export default async function PartnerPage() {
   const viewer = await requireAcademy("/academy/partner");
   if (viewer.mode !== "sales") {
@@ -43,7 +51,7 @@ export default async function PartnerPage() {
   let sales: RepSales | null = null;
   let error = false;
   try {
-    [links, sales] = await Promise.all([repLinks(viewer.user), repSales(viewer.user.id)]);
+    [links, sales] = await Promise.all([repLinks(viewer.user, await requestOrigin()), repSales(viewer.user.id)]);
   } catch (e) {
     console.error("Partner space: Stripe read failed", e);
     error = true;

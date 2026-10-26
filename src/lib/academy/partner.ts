@@ -30,21 +30,24 @@ export const COMMISSION_MONTHS = 12;
 export const commissionFor = (plan: PlanId, monthIndex: number) =>
   monthIndex <= 3 ? COMMISSION_CENTS[plan].early : monthIndex <= COMMISSION_MONTHS ? COMMISSION_CENTS[plan].later : 0;
 
-// ---------- Liens de paiement ----------
+// ---------- Pages de paiement (Stripe Checkout, en dollars uniquement) ----------
 
-export type RepLink = { plan: PlanId; url: string };
-
-async function priceFor(plan: PlanId) {
-  const [price] = (await stripe.prices.list({ lookup_keys: [`centurie_${plan}_monthly_usd`], limit: 1 })).data;
-  if (!price) throw new Error(`Missing Stripe price for ${plan}`);
-  return price;
-}
-
-async function createRepLink(user: User, plan: PlanId) {
+/**
+ * Crée une page de paiement Stripe Checkout pour une offre. Contrairement aux Payment Links (conversion
+ * de devise imposée par Stripe), Checkout permet de couper la conversion : le prix reste en dollars pour tous.
+ * `rep` : apporteur accrédité à qui rattacher le client (métadonnées de l'abonnement).
+ */
+export async function createCheckoutUrl(plan: PlanId, origin: string, rep?: Pick<User, "id" | "email">) {
   const price = await priceFor(plan);
-  const meta = { centurie_plan: plan, sales_rep_id: user.id, sales_rep_email: user.email };
-  return stripe.paymentLinks.create({
+  const meta = {
+    centurie_plan: plan,
+    commitment_months: "12",
+    ...(rep ? { sales_rep_id: rep.id, sales_rep_email: rep.email } : {}),
+  };
+  const session = await stripe.checkout.sessions.create({
+    mode: "subscription",
     line_items: [{ price: price.id, quantity: 1 }],
+    adaptive_pricing: { enabled: false },
     consent_collection: { terms_of_service: "required" },
     custom_text: {
       terms_of_service_acceptance: {
@@ -62,39 +65,38 @@ async function createRepLink(user: User, plan: PlanId) {
     ],
     subscription_data: {
       description: `Centurie Growth ${PLAN_LABEL[plan]}: firm 12-month commitment per Instagram account. Terms: ${TERMS}`,
-      metadata: { ...meta, commitment_months: "12" },
+      metadata: meta,
     },
     metadata: meta,
     allow_promotion_codes: false,
+    success_url: `${origin}/pay/success`,
+    cancel_url: "https://www.centuriegrowth.com/#plans",
   });
+  if (!session.url) throw new Error("Stripe Checkout returned no URL");
+  return session.url;
+}
+
+// ---------- Liens de paiement ----------
+
+export type RepLink = { plan: PlanId; url: string };
+
+async function priceFor(plan: PlanId) {
+  const [price] = (await stripe.prices.list({ lookup_keys: [`centurie_${plan}_monthly_usd`], limit: 1 })).data;
+  if (!price) throw new Error(`Missing Stripe price for ${plan}`);
+  return price;
 }
 
 /**
- * Liens personnels d'un apporteur accrédité : créés au premier besoin, réactivés s'ils avaient été coupés.
- * Sans accréditation valable : coupés dans Stripe, et rien n'est renvoyé.
+ * Liens personnels d'un apporteur accrédité : pages de paiement du dashboard, en dollars, qui portent son identifiant.
+ * Sans accréditation valable : rien n'est renvoyé, et la page de paiement refuse le lien (voir app/pay).
  */
-export async function repLinks(user: User): Promise<RepLink[] | null> {
+export async function repLinks(user: User, origin: string): Promise<RepLink[] | null> {
   if ((await accreditationOf(user.id)).status !== "valid") {
+    // Anciens liens Stripe (Payment Links) éventuels : coupés aussi.
     await deactivateRepLinks(user.id);
     return null;
   }
-  const rows = await db.select().from(salesPaymentLinks).where(eq(salesPaymentLinks.userId, user.id));
-  const links: RepLink[] = [];
-  for (const plan of PLAN_ORDER) {
-    const row = rows.find((r) => r.plan === plan);
-    if (!row) {
-      const link = await createRepLink(user, plan);
-      await db.insert(salesPaymentLinks).values({ userId: user.id, plan, stripeLinkId: link.id, url: link.url }).onConflictDoNothing();
-      links.push({ plan, url: link.url });
-    } else {
-      if (!row.active) {
-        await stripe.paymentLinks.update(row.stripeLinkId, { active: true });
-        await db.update(salesPaymentLinks).set({ active: true }).where(and(eq(salesPaymentLinks.userId, user.id), eq(salesPaymentLinks.plan, plan)));
-      }
-      links.push({ plan, url: row.url });
-    }
-  }
-  return links;
+  return PLAN_ORDER.map((plan) => ({ plan, url: `${origin}/pay/${plan}?rep=${user.id}` }));
 }
 
 /** Coupe les liens d'un apporteur (accréditation retirée ou expirée) : plus aucun nouveau client possible. */
