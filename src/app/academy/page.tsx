@@ -109,7 +109,17 @@ export default async function AcademyHome() {
 
         <section className={styles.card}>
           <h2 className={styles.cardTitle}>Ton accréditation</h2>
-          {accreditation?.status === "valid" ? (
+          {viewer.mode === "preview" ? (
+            <>
+              <p className={styles.cardText}>
+                <span className={`${styles.badge} ${styles.badgeOk}`}>Admin</span> Accès complet : tu peux lancer la démo de closing
+                sans passer l&apos;examen.
+              </p>
+              <Link href="/academy/demo" className={styles.primary}>
+                Lancer une démo client →
+              </Link>
+            </>
+          ) : accreditation?.status === "valid" ? (
             <>
               <p className={styles.cardText}>
                 <span className={`${styles.badge} ${styles.badgeOk}`}>Accrédité</span> jusqu&apos;au {dateFr.format(accreditation.expiresAt)}.

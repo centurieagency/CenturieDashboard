@@ -53,9 +53,14 @@ export default async function AdminPage({ searchParams }: AdminProps) {
                 <strong>{accounts ? linked : "–"}</strong>
               </dd>
             </dl>
-            <Link href="/admin/academy" className={styles.cardButton} style={{ alignSelf: "flex-start" }}>
-              Sales partners · Academy →
-            </Link>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+              <Link href="/admin/academy" className={styles.cardButton}>
+                Sales partners · Academy →
+              </Link>
+              <Link href="/academy/demo" className={styles.cardButton}>
+                Closing demo →
+              </Link>
+            </div>
           </div>
         }
       />

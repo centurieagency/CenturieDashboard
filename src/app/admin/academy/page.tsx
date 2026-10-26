@@ -53,9 +53,16 @@ export default async function AdminAcademyPage() {
           <span className={styles.eyebrow}>Admin · Academy</span>
           <h1 className={styles.title}>Sales partners</h1>
           <p className={styles.lead}>
-            {rows.length} partner{rows.length === 1 ? "" : "s"}, {accredited} accredited.{" "}
-            <Link href="/academy">Preview the course</Link>.
+            {rows.length} partner{rows.length === 1 ? "" : "s"}, {accredited} accredited.
           </p>
+          <div className={styles.actions} style={{ marginTop: 16 }}>
+            <Link href="/academy/demo" className={styles.primary}>
+              Launch a closing demo →
+            </Link>
+            <Link href="/academy" className={styles.ghost}>
+              Preview the course
+            </Link>
+          </div>
         </header>
 
         <section className={styles.card} aria-labelledby="invite-title">
