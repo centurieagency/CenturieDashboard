@@ -67,6 +67,8 @@ export const authOptions: NextAuthOptions = {
         token.provider = account?.provider;
         // Le compte admin de l'agence n'est pas un client : pas de client Stripe ni de token client.
         if (dbUser.email === ADMIN_EMAIL) return token;
+        // Un apporteur d'affaires non plus : il n'a accès qu'à l'Academy.
+        if (dbUser.role === "sales") return token;
         // À la connexion : on retrouve le client Stripe existant, sinon on le crée.
         try {
           token.stripeCustomerId = await ensureStripeCustomer(dbUser);

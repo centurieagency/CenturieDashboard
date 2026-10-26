@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { SubscriptionsView, type ListParams } from "@/components/dashboard/subscriptions-view";
 import styles from "@/components/dashboard/subscriptions.module.css";
@@ -52,6 +53,9 @@ export default async function AdminPage({ searchParams }: AdminProps) {
                 <strong>{accounts ? linked : "–"}</strong>
               </dd>
             </dl>
+            <Link href="/admin/academy" className={styles.cardButton} style={{ alignSelf: "flex-start" }}>
+              Sales partners · Academy →
+            </Link>
           </div>
         }
       />

@@ -1,0 +1,46 @@
+/* Admin Academy : liste des invitations et tableau des apporteurs. */
+
+.scroll { overflow-x: auto; }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  color: var(--text-body);
+}
+
+.table th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.table td {
+  padding: 14px 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.table b { color: var(--charcoal); }
+.table small,
+.list small { display: block; margin-top: 3px; font-size: 12.5px; color: var(--text-muted); }
+
+.muted { color: var(--text-muted); font-size: 13.5px; }
+
+.list { list-style: none; margin: 0; padding: 0; }
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.row:last-child { border-bottom: 0; }

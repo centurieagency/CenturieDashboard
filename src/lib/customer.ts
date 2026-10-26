@@ -23,6 +23,8 @@ export const requireCustomer = cache(async (callbackUrl = "/") => {
   let customerId: string | undefined;
   let apiToken: string | undefined;
   const dbUser = session.user.email ? await findUserByEmail(session.user.email) : undefined;
+  // Les apporteurs d'affaires n'ont pas d'espace client : leur espace, c'est l'Academy.
+  if (dbUser?.role === "sales") redirect("/academy");
 
   if (dbUser) {
     try {
