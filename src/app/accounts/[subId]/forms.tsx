@@ -127,6 +127,31 @@ export function ConnectForm({
         </div>
         <span className={styles.hint}>Sent over an encrypted connection to run your account. Never shown again.</span>
       </div>
+      <fieldset className={styles.field} style={{ border: 0, padding: 0, margin: 0 }}>
+        <legend className={styles.label}>
+          5 backup codes{requireConsent ? "" : " (optional for the team)"}
+        </legend>
+        <div className={styles.codesGrid}>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <input
+              key={n}
+              name={`code${n}`}
+              className={styles.input}
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="12345678"
+              pattern="[0-9 ]{8,9}"
+              maxLength={9}
+              aria-label={`Backup code ${n}`}
+              required={requireConsent}
+            />
+          ))}
+        </div>
+        <span className={styles.hint}>
+          They let us log in safely when Instagram asks for a security code. In Instagram: Settings › Accounts Center ›
+          Password and security › Two-factor authentication › your account › Additional methods › Backup codes.
+        </span>
+      </fieldset>
       {requireConsent && (
         <label className={styles.checkRow}>
           <input type="checkbox" name="consent" required />

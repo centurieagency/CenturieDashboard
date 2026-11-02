@@ -4,6 +4,8 @@ import Link from "next/link";
 import { SubscriptionsView, type ListParams } from "@/components/dashboard/subscriptions-view";
 import styles from "@/components/dashboard/subscriptions.module.css";
 import { SiteHeader } from "@/components/site-header";
+import { db } from "@/db";
+import { onboardingBriefs } from "@/db/schema";
 import { requireAdmin } from "@/lib/admin";
 import { loadAllAccounts, loadAllSubscriptions } from "@/lib/dashboard-data";
 import { env } from "@/lib/env";
@@ -17,10 +19,12 @@ export default async function AdminPage({ searchParams }: AdminProps) {
   const params = await searchParams;
   // Confirmation après suppression (texte affiché tel quel, jamais interprété comme HTML).
   const deleted = params.deleted?.slice(0, 80);
-  const [subscriptions, accounts] = await Promise.all([
+  const [subscriptions, accounts, briefRows] = await Promise.all([
     loadAllSubscriptions(),
     loadAllAccounts(env.CENTURIE_API_TOKEN),
+    db.select({ subId: onboardingBriefs.subId }).from(onboardingBriefs),
   ]);
+  const briefs = new Set(briefRows.map((b) => b.subId));
 
   const clients = subscriptions.ok ? new Set(subscriptions.data.map((s) => s.customer?.id)).size : 0;
   const linked = accounts ? [...accounts.values()].filter((a) => a.account.username).length : 0;
@@ -34,6 +38,7 @@ export default async function AdminPage({ searchParams }: AdminProps) {
         params={params}
         basePath="/admin"
         showCustomer
+        briefs={briefs}
         notice={deleted ? `${deleted} was deleted and its Stripe subscription cancelled.` : undefined}
         head={
           <div className={styles.head}>

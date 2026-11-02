@@ -1017,3 +1017,21 @@ textarea.input {
   background: color-mix(in srgb, var(--status-ok) 10%, transparent);
   color: var(--text-secondary);
 }
+
+/* Codes de secours Instagram (connexion du compte) */
+.codesGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.codesGrid .input {
+  text-align: center;
+  letter-spacing: 0.04em;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+@media (max-width: 560px) {
+  .codesGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

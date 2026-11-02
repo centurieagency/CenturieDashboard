@@ -541,3 +541,20 @@ a.customerEmail:hover {
 @keyframes linkSpin {
   to { transform: rotate(360deg); }
 }
+
+/* Admin : état du questionnaire de démarrage sur la carte */
+.briefTag {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--status-warn) 45%, transparent);
+  color: var(--status-warn-text);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.briefTag[data-done] {
+  border-color: color-mix(in srgb, var(--status-ok) 45%, transparent);
+  color: var(--status-ok-text);
+}

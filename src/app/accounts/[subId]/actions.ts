@@ -108,13 +108,26 @@ const connectSchema = z.object({
 export async function connectAction(subId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
   const parsed = connectSchema.safeParse({ username: form.get("username"), password: form.get("password") });
   if (!parsed.success) return invalid(parsed.error);
+  const admin = isAdminSession(await auth());
   // Le client donne son autorisation explicite (case à cocher) ; l'admin agit sur instruction du client.
-  if (!isAdminSession(await auth()) && form.get("consent") !== "on")
+  if (!admin && form.get("consent") !== "on")
     return { status: "error", message: "Please confirm you authorize Centurie Growth to manage this account." };
+  // 5 codes de secours Instagram (8 chiffres) : obligatoires pour le client, facultatifs pour l'admin.
+  const codes = [1, 2, 3, 4, 5].map((n) => String(form.get(`code${n}`) ?? "").replace(/\D/g, "")).filter(Boolean);
+  if (codes.some((c) => c.length !== 8) || (!admin && codes.length !== 5) || new Set(codes).size !== codes.length)
+    return { status: "error", message: "Enter 5 different backup codes of 8 digits each." };
   return run(
     subId,
     async (token, sub) => {
       await connectAccount(token, { sub_id: sub, ...parsed.data });
+      if (codes.length) {
+        try {
+          await update2FACodes(token, sub, codes);
+        } catch (error) {
+          console.error("Backup codes not saved after connect", error);
+          return "Account sent, but the backup codes couldn't be saved. Add them again in Settings, under Login and security.";
+        }
+      }
       return "Account sent. We're logging in, this can take a few minutes.";
     },
     "This Instagram account is already connected to a subscription.",

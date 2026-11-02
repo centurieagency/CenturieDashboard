@@ -229,6 +229,7 @@ export async function AccountView({
         </p>
       )}
 
+      {tab === "overview" && admin && <BriefSection subId={subId} brief={brief} admin />}
       {tab === "overview" && !admin && !brief && <BriefSection subId={subId} brief={null} admin={false} />}
       {tab === "overview" && !admin && briefJustSent && (
         <p role="status" className={`${styles.notice} ${styles.noticeOk}`}>

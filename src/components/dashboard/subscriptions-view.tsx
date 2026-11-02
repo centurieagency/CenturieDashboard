@@ -98,6 +98,7 @@ export function SubscriptionsView({
   readOnly = false,
   notice,
   head,
+  briefs,
 }: {
   subscriptions: SubscriptionsResult;
   accounts: AccountsBySub | null;
@@ -111,6 +112,8 @@ export function SubscriptionsView({
   /** Message affiché sous l'en-tête (ex. confirmation de suppression). */
   notice?: string;
   head: React.ReactNode;
+  /** Espace admin : abonnements dont le client a rempli le questionnaire de démarrage. */
+  briefs?: Set<string>;
 }) {
   const subFilter = filters ? pick<SubFilter>(params.sub, SUB_FILTERS, "all") : "all";
   const accountFilter = filters ? pick<AccountFilter>(params.account, ACCOUNT_FILTERS, "all") : "all";
@@ -252,6 +255,11 @@ export function SubscriptionsView({
                       ended={ENDED.has(sub.status)}
                       readOnly={readOnly}
                     />
+                    {briefs && !ENDED.has(sub.status) && (
+                      <Link href={accountHref(sub.id)} className={styles.briefTag} data-done={briefs.has(sub.id) || undefined}>
+                        {briefs.has(sub.id) ? "✓ Questionnaire received" : "Questionnaire pending"}
+                      </Link>
+                    )}
                     {basePath === "/admin" && (
                       <div className={styles.cardDanger}>
                         <CardDelete
