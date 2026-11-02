@@ -581,7 +581,18 @@ function BriefSection({ subId, brief, admin }: { subId: string; brief: BriefAnsw
               <dt>Ideal customer</dt>
               <dd>{brief.idealCustomer}</dd>
               <dt>Similar accounts</dt>
-              <dd>{brief.competitors.map((c) => `@${c}`).join(", ")}</dd>
+              <dd>
+                <ul className={styles.chips}>
+                  {brief.competitors.map((c) => (
+                    <li key={c} className={styles.chip}>
+                      <Image src={profilePictureUrl(c)} alt="" width={26} height={26} className={styles.pickerAvatar} />
+                      <a href={`https://www.instagram.com/${encodeURIComponent(c)}/`} target="_blank" rel="noopener noreferrer">
+                        @{c}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </dd>
               {brief.website && (
                 <>
                   <dt>Website</dt>

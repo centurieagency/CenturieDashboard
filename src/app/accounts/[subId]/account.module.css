@@ -1035,3 +1035,98 @@ textarea.input {
 @media (max-width: 560px) {
   .codesGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Questionnaire : recherche de comptes Instagram (photo, nom, followers) et comptes retenus */
+.picker { display: flex; flex-direction: column; gap: 10px; }
+
+.pickerSearch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-sm);
+  background: var(--cream);
+  color: var(--text-muted);
+}
+
+.pickerSearch:focus-within { outline: 2px solid var(--data-accent); outline-offset: 2px; }
+
+.pickerSearch svg { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+
+.pickerSearch input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font: 15px var(--font-body);
+  color: var(--charcoal);
+}
+
+.pickerSearch input:focus { outline: none; }
+
+.pickerResult { min-height: 22px; }
+.pickerResult .muted { margin: 2px 0 0; }
+
+.pickerCard {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--data-accent) 40%, var(--border));
+  border-radius: var(--radius-sm);
+  background: var(--white);
+}
+
+.pickerWho { display: flex; flex-direction: column; min-width: 0; }
+.pickerWho b { color: var(--charcoal); font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pickerWho span { font-size: 12.5px; color: var(--text-muted); }
+.pickerVerified { color: var(--data-accent); }
+.pickerWarn { color: var(--status-warn-text) !important; }
+
+.pickerAvatar,
+.pickerInitials {
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+  background: var(--cream-alt);
+  border: 1px solid var(--border);
+}
+
+.pickerInitials {
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px 4px 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--cream-alt);
+  font-size: 13.5px;
+  color: var(--charcoal);
+}
+
+.chip button {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.chip button:hover { color: var(--status-danger-text); background: color-mix(in srgb, var(--status-danger) 12%, transparent); }

@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import type { BriefAnswers } from "@/db/schema";
 import { addBriefTargetsAction, saveBriefAction, type ActionState } from "./actions";
 import styles from "./account.module.css";
+import { TargetPicker } from "./target-picker";
 
 const IDLE: ActionState = { status: "idle" };
 
@@ -92,19 +93,8 @@ export function BriefForm({ subId, initial }: { subId: string; initial?: BriefAn
       </div>
 
       <div className={styles.field}>
-        <label htmlFor="b-competitors" className={styles.label}>
-          3 to 10 similar accounts or competitors
-        </label>
-        <textarea
-          id="b-competitors"
-          name="competitors"
-          className={styles.input}
-          rows={3}
-          placeholder={"@competitor_one\n@local_favourite\n@account_you_admire"}
-          defaultValue={initial?.competitors.map((c) => `@${c}`).join("\n") ?? ""}
-          required
-        />
-        <span className={styles.hint}>Accounts whose followers look like your customers. We reach their audience.</span>
+        <span className={styles.label}>3 to 10 similar accounts or competitors</span>
+        <TargetPicker name="competitors" initial={initial?.competitors ?? []} />
       </div>
 
       <div className={styles.columns}>

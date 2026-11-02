@@ -185,6 +185,69 @@ export function getInstagramProfile(username: string, waitMs = 2000): Promise<In
 export const profilePictureUrl = (username: string) =>
   `${BASE_URL}/instagram/pdp/${encodeURIComponent(username.toLowerCase())}`;
 
+export type InstagramLookup = {
+  username: string;
+  fullName: string | null;
+  followers: number | null;
+  isPrivate: boolean;
+  isVerified: boolean;
+};
+
+/**
+ * Recherche d'un compte Instagram par son @ exact (rapide, ~0,5 s) pour le choix des cibles.
+ * Seuls les comptes trouvés sont mis en cache (1 jour) : un « introuvable » peut être un raté passager de l'API,
+ * il est donc revérifié à chaque recherche. Données publiques, lues avec le jeton admin.
+ */
+class LookupNotFound extends Error {}
+
+const cachedLookup = unstable_cache(
+  async (username: string): Promise<InstagramLookup> => {
+    const res = await fetch(`${BASE_URL}/instagram/user/by/username?username=${encodeURIComponent(username)}`, {
+      headers: { Authorization: `Bearer ${env.CENTURIE_API_TOKEN}` },
+      signal: AbortSignal.timeout(6000),
+      cache: "no-store",
+    });
+    if (res.status === 404) throw new LookupNotFound();
+    if (!res.ok) throw new CenturieApiError(res.status, res.statusText);
+    const u = (await res.json()) as {
+      username?: string;
+      full_name?: string | null;
+      follower_count?: number | null;
+      is_private?: boolean | null;
+      is_verified?: boolean | null;
+    };
+    if (!u.username) {
+      // Réponse vide pour certains gros comptes (ex. adidas) : la photo de profil confirme qu'il existe.
+      const photo = await fetch(`${BASE_URL}/instagram/pdp/${encodeURIComponent(username)}`, {
+        method: "HEAD",
+        signal: AbortSignal.timeout(6000),
+        cache: "no-store",
+      });
+      if (photo.status === 404) throw new LookupNotFound();
+      if (!photo.ok) throw new CenturieApiError(photo.status, photo.statusText);
+      return { username, fullName: null, followers: null, isPrivate: false, isVerified: false };
+    }
+    return {
+      username: u.username.toLowerCase(),
+      fullName: u.full_name || null,
+      followers: u.follower_count ?? null,
+      isPrivate: !!u.is_private,
+      isVerified: !!u.is_verified,
+    };
+  },
+  ["instagram-lookup-v2"],
+  { revalidate: 24 * 3600 },
+);
+
+export async function lookupInstagramAccount(username: string): Promise<InstagramLookup | null> {
+  try {
+    return await cachedLookup(username.toLowerCase());
+  } catch (error) {
+    if (error instanceof LookupNotFound) return null;
+    throw error;
+  }
+}
+
 // ---------- Lecture ----------
 
 export const listAccounts = (token: string) => request<AccountSummary[]>(token, "/accounts");

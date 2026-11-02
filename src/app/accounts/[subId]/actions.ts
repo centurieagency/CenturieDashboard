@@ -6,6 +6,8 @@ import { z } from "zod";
 import {
   addTarget,
   backendToken,
+  lookupInstagramAccount,
+  type InstagramLookup,
   CenturieApiError,
   listAccounts,
   connectAccount,
@@ -418,4 +420,29 @@ export async function addBriefTargetsAction(subId: string, _prev: ActionState): 
   }
   revalidatePath(`/admin/accounts/${subId}`);
   return { status: "success", message: `${added} target${added === 1 ? "" : "s"} added${skipped ? `, ${skipped} already there` : ""}.` };
+}
+
+// ---------- Recherche de comptes (questionnaire : choix des cibles) ----------
+
+export type LookupResult =
+  | { status: "found"; account: InstagramLookup }
+  | { status: "not_found" }
+  | { status: "error" };
+
+/** Cherche un compte Instagram par son @ exact. Réservé aux personnes connectées (pas un service de recherche public). */
+export async function lookupTargetAction(raw: string): Promise<LookupResult> {
+  const session = await auth();
+  if (!session?.user.email) return { status: "error" };
+  const parsed = instagramUsername.safeParse(raw);
+  if (!parsed.success) return { status: "not_found" };
+  // L'API répond d'habitude en moins d'une seconde, mais a parfois un raté : un second essai avant d'abandonner.
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const account = await lookupInstagramAccount(parsed.data);
+      return account ? { status: "found", account } : { status: "not_found" };
+    } catch (error) {
+      if (attempt === 2) console.error("Instagram lookup failed", error);
+    }
+  }
+  return { status: "error" };
 }
