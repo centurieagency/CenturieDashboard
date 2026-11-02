@@ -77,7 +77,7 @@ C'est volontaire : aller trop vite expose le compte. Tu n'as pas besoin de conna
 
 1. Le client paie via le lien de paiement que tu lui envoies (un abonnement par compte Instagram).
 2. Juste après le paiement, il crée son **espace client** depuis la page de confirmation.
-3. Il y **connecte lui-même son compte Instagram** (nom d'utilisateur et mot de passe), sur une connexion chiffrée. **Tu ne demandes jamais le mot de passe d'un prospect ou d'un client**, et tu ne le transmets jamais : il le saisit lui-même dans son espace.
+3. Il y **connecte lui-même son compte Instagram** (nom d'utilisateur, mot de passe et **5 codes de secours** : la double authentification est obligatoire), sur une connexion chiffrée. **Tu ne demandes jamais le mot de passe d'un prospect ou d'un client**, et tu ne le transmets jamais : il le saisit lui-même dans son espace.
 4. La connexion prend de quelques minutes à une journée. Instagram peut demander au client de confirmer la connexion dans son application (« C'était vous ? »).
 5. On choisit les cibles, la croissance démarre avec la montée progressive.
 
@@ -179,7 +179,7 @@ Un commercial qui connaît les limites inspire confiance. Un commercial qui les 
 2. **Ce n'est pas instantané.** Pas de pic du jour au lendemain : une croissance progressive qui s'accumule.
 3. **Le profil compte.** Un compte vide ou peu engageant convertira mal, quel que soit le ciblage.
 4. **Le risque n'est jamais nul.** Le service fonctionne par des interactions automatisées, prudentes et dans les usages normaux. Mais les règles d'Instagram encadrent l'automatisation, et aucun service de ce type ne peut garantir zéro restriction.
-5. **Le client doit coopérer** : connecter son compte depuis son espace client, valider la double authentification et les vérifications d'Instagram, prévenir s'il change son mot de passe. Sinon, le service s'arrête (et la facturation continue).
+5. **Le client doit coopérer** : connecter son compte depuis son espace client, **garder la double authentification activée** (5 codes de secours à fournir), confirmer les vérifications d'Instagram, prévenir s'il change son mot de passe. Sinon, le service s'arrête (et la facturation continue).
 6. **Le compte doit rester public.**
 7. **On ne fait pas** : de la publicité payante, de l'achat de followers, du shooting photo, de la création de contenu de zéro.
 

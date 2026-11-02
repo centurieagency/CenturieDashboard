@@ -206,7 +206,7 @@ The correct answer is marked ✅.
 - c) You promise it to close the deal
 - d) You offer the Signature plan to reach it
 
-**D3.** A prospect refuses to connect their Instagram account or to validate two-factor authentication. What do you do?
+**D3.** A prospect refuses to connect their Instagram account or to turn on two-factor authentication. What do you do?
 - a) You sign them anyway
 - ✅ b) You don't sign them: the service can't run without it
 - c) You find a way to run it without access

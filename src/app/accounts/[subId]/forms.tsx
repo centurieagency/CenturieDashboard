@@ -129,7 +129,7 @@ export function ConnectForm({
       </div>
       <fieldset className={styles.field} style={{ border: 0, padding: 0, margin: 0 }}>
         <legend className={styles.label}>
-          5 backup codes{requireConsent ? "" : " (optional for the team)"}
+          5 backup codes (two-factor authentication required)
         </legend>
         <div className={styles.codesGrid}>
           {[1, 2, 3, 4, 5].map((n) => (
@@ -140,16 +140,18 @@ export function ConnectForm({
               inputMode="numeric"
               autoComplete="off"
               placeholder="12345678"
-              pattern="[0-9 ]{8,9}"
-              maxLength={9}
+              pattern="[0-9]{8}"
+              minLength={8}
+              maxLength={8}
               aria-label={`Backup code ${n}`}
-              required={requireConsent}
+              required
             />
           ))}
         </div>
         <span className={styles.hint}>
-          They let us log in safely when Instagram asks for a security code. In Instagram: Settings › Accounts Center ›
-          Password and security › Two-factor authentication › your account › Additional methods › Backup codes.
+          Two-factor authentication must be on: it protects your account and lets us log in safely. Each code has 8 digits. In
+          Instagram: Settings › Accounts Center › Password and security › Two-factor authentication › your account › Additional
+          methods › Backup codes.
         </span>
       </fieldset>
       {requireConsent && (
