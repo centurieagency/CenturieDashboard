@@ -33,13 +33,13 @@ export const ACCOUNT_STATUS: Record<AccountStatus, StatusInfo> = {
     label: "Wrong password",
     tone: "warn",
     help: "Instagram rejected the password. Update it under Login and security.",
-    clientHelp: `Instagram rejected the password we have. If you changed it recently, send the new one to your account manager. ${TEAM_ON_IT}`,
+    clientHelp: "Instagram rejected the password we have. If you changed it recently, enter the new one in Settings, under Login and security.",
   },
   wrong_2fa: {
     label: "2FA issue",
     tone: "warn",
     help: "We couldn't pass two-factor authentication. Add the authenticator key or fresh backup codes below.",
-    clientHelp: `We couldn't pass two-factor authentication. ${TEAM_ON_IT}`,
+    clientHelp: "We couldn't pass two-factor authentication. Add fresh backup codes in Settings, under Login and security.",
   },
   challenge_required: {
     label: "Verification required",

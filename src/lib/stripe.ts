@@ -78,6 +78,8 @@ export type CustomerSubscription = {
   lines: SubscriptionLine[];
   /** Client Stripe propriétaire : renseigné pour l'espace admin. */
   customer?: SubscriptionCustomer;
+  /** Compte Instagram saisi par le client au paiement (métadonnée de l'abonnement). */
+  instagram: string | null;
 };
 
 function toCustomer(customer: string | Stripe.Customer | Stripe.DeletedCustomer): SubscriptionCustomer {
@@ -114,10 +116,12 @@ export async function listAllSubscriptions(): Promise<CustomerSubscription[]> {
 }
 
 /** Espace admin : client propriétaire d'un abonnement (pour afficher son email sur le compte). */
-export async function getSubscriptionCustomer(subId: string): Promise<SubscriptionCustomer | null> {
+export async function getSubscriptionCustomer(
+  subId: string,
+): Promise<(SubscriptionCustomer & { instagram: string | null }) | null> {
   try {
     const sub = await stripe.subscriptions.retrieve(subId, { expand: ["customer"] });
-    return toCustomer(sub.customer);
+    return { ...toCustomer(sub.customer), instagram: sub.metadata?.instagram_username ?? null };
   } catch (error) {
     if (error instanceof Stripe.errors.StripeInvalidRequestError) return null;
     throw error;
@@ -168,6 +172,7 @@ async function toCustomerSubscriptions(
   return subscriptions.map((sub) => ({
     id: sub.id,
     ...(withCustomer && { customer: toCustomer(sub.customer) }),
+    instagram: sub.metadata?.instagram_username ?? null,
     status: sub.status,
     startDate: sub.start_date,
     cancelAt: sub.cancel_at,

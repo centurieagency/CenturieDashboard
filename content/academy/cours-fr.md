@@ -76,9 +76,10 @@ C'est volontaire : aller trop vite expose le compte. Tu n'as pas besoin de conna
 ### Le démarrage d'un client
 
 1. Le client paie via le lien de paiement que tu lui envoies (un abonnement par compte Instagram).
-2. **Notre équipe** récupère ses accès et connecte le compte. **Tu ne demandes jamais le mot de passe d'un prospect ou d'un client** : c'est l'équipe qui s'en occupe, par un canal sécurisé.
-3. La connexion prend de quelques minutes à une journée. Instagram peut demander au client de confirmer la connexion dans son application (« C'était vous ? »).
-4. On choisit les cibles, la croissance démarre avec la montée progressive.
+2. Juste après le paiement, il crée son **espace client** depuis la page de confirmation.
+3. Il y **connecte lui-même son compte Instagram** (nom d'utilisateur et mot de passe), sur une connexion chiffrée. **Tu ne demandes jamais le mot de passe d'un prospect ou d'un client**, et tu ne le transmets jamais : il le saisit lui-même dans son espace.
+4. La connexion prend de quelques minutes à une journée. Instagram peut demander au client de confirmer la connexion dans son application (« C'était vous ? »).
+5. On choisit les cibles, la croissance démarre avec la montée progressive.
 
 ### Confidentialité
 
@@ -89,7 +90,7 @@ On parle toujours **du moteur Centurie** ou **de l'outil Centurie**. On ne cite 
 ### Mini-quiz
 
 1. D'où viennent les nouveaux followers ? *(De vraies personnes de l'audience des comptes cibles, qui voient les interactions et s'abonnent.)*
-2. Qui demande et récupère le mot de passe du client ? *(L'équipe Centurie, jamais le commercial.)*
+2. Comment le client nous donne-t-il son mot de passe Instagram ? *(Il le saisit lui-même dans son espace client sécurisé, après le paiement. Jamais par le commercial.)*
 3. Pourquoi y a-t-il des limites journalières et une montée progressive ? *(Pour protéger le compte : aller trop vite l'expose.)*
 
 ---
@@ -178,7 +179,7 @@ Un commercial qui connaît les limites inspire confiance. Un commercial qui les 
 2. **Ce n'est pas instantané.** Pas de pic du jour au lendemain : une croissance progressive qui s'accumule.
 3. **Le profil compte.** Un compte vide ou peu engageant convertira mal, quel que soit le ciblage.
 4. **Le risque n'est jamais nul.** Le service fonctionne par des interactions automatisées, prudentes et dans les usages normaux. Mais les règles d'Instagram encadrent l'automatisation, et aucun service de ce type ne peut garantir zéro restriction.
-5. **Le client doit coopérer** : donner ses accès à l'équipe, valider la double authentification et les vérifications d'Instagram, prévenir s'il change son mot de passe. Sinon, le service s'arrête (et la facturation continue).
+5. **Le client doit coopérer** : connecter son compte depuis son espace client, valider la double authentification et les vérifications d'Instagram, prévenir s'il change son mot de passe. Sinon, le service s'arrête (et la facturation continue).
 6. **Le compte doit rester public.**
 7. **On ne fait pas** : de la publicité payante, de l'achat de followers, du shooting photo, de la création de contenu de zéro.
 
@@ -218,7 +219,7 @@ Ces phrases sont **éliminatoires à l'examen**. Sur le terrain, elles exposent 
 | « C'est validé ou approuvé par Instagram. » | C'est faux. |
 | « Vous pouvez arrêter quand vous voulez. » | L'engagement est de 12 mois ferme. |
 | « Je vous fais un prix. » / « Premier mois offert. » | Tu ne peux accorder aucune remise ni aucun essai. |
-| « Envoyez-moi votre mot de passe. » | Seule l'équipe récupère les accès. |
+| « Envoyez-moi votre mot de passe. » | Le client le saisit lui-même dans son espace client sécurisé. |
 | Citer un autre outil, logiciel ou prestataire | Information confidentielle. On parle uniquement du moteur Centurie. |
 | « On crée tout votre contenu. » | Le contenu est fait à partir de ses photos et vidéos, et seulement à partir de l'offre Growth. |
 | Dénigrer un concurrent nommément | Ça ne sert jamais la vente, et ça peut se retourner contre nous. |
@@ -242,7 +243,7 @@ Ces phrases sont **éliminatoires à l'examen**. Sur le terrain, elles exposent 
 | "I can do it myself." | "You can, it's what we used to do by hand. It takes hours every day, and consistency is what makes it work. We do it every day so you don't have to." |
 | "How many followers will I get?" | "Most accounts gain between 10 and 70 a day. Where you land depends on your niche and your profile, so I won't promise a number." |
 | "Can I try it for a month first?" | "We don't do trials, because the first weeks are a gradual ramp-up and wouldn't show you the real result. What I can do is walk you through the dashboard." |
-| "Do you need my password?" | "Our team handles the connection securely after you sign up. I never ask for your password." |
+| "Do you need my password?" | "After you subscribe, you connect your account yourself in your secure client space. I never ask for your password." |
 
 ### Mini-quiz
 
@@ -267,7 +268,7 @@ Ces phrases sont **éliminatoires à l'examen**. Sur le terrain, elles exposent 
 2. **Celui qui veut juste un chiffre** de followers pour la vitrine, peu importe qui ils sont.
 3. **Un compte presque vide**, sans bio ni posts : les visiteurs ne s'abonneront pas.
 4. **Un compte déjà restreint** ou bloqué par Instagram.
-5. **Celui qui refuse de donner ses accès** à l'équipe ou de valider la double authentification.
+5. **Celui qui refuse de connecter son compte** ou de valider la double authentification.
 
 > Refuser un mauvais client, c'est protéger ta commission : un client déçu part, conteste, et fait du bruit.
 
@@ -307,6 +308,7 @@ Tu touches une commission **sur chaque mois payé** par les clients que tu as si
 - **Après 12 mois**, il n'y a plus de commission sur ce client.
 - **Si le client arrête avant 12 mois**, les mois restants lui sont facturés, comme le prévoit le contrat. Tu touches ta commission sur ces mois aussi.
 - Si Instagram supprime définitivement le compte, le contrat de ce compte s'arrête sans mois restants dus : la commission s'arrête aussi.
+- **Un mois remboursé au client ou contesté** (litige bancaire) ne donne pas de commission.
 - Chaque compte Instagram signé est un contrat, donc une commission.
 
 ### Pourquoi la qualité paie

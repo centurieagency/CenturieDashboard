@@ -6,10 +6,9 @@ import { redirect } from "next/navigation";
 import styles from "@/components/auth/auth.module.css";
 import { BrandLockup } from "@/components/brand/brand-lockup";
 import { auth } from "@/lib/auth";
-import { SignupForm } from "./signup-form";
 
 export const metadata: Metadata = {
-  title: "Sign up · Centurie Growth",
+  title: "Create your account · Centurie Growth",
 };
 
 const STEPS = [
@@ -72,19 +71,30 @@ export default async function SignupPage() {
         <div className={styles.center}>
           <div className={`${styles.formColumn} ${styles.formColumnWide}`}>
             <div className={styles.heading}>
-              <h1 className={styles.title}>Create your account</h1>
+              <h1 className={styles.title}>Your account comes with your subscription</h1>
               <p className={styles.intro}>
-                Tell us about your business. We&apos;ll review your account before the discovery call.
+                Your client space is created right after you subscribe: the payment confirmation page lets you set your
+                password. Already a client without access? Your account manager can send you a personal link.
               </p>
             </div>
 
-            <SignupForm />
+            <div className={styles.fields}>
+              <a href="https://www.centuriegrowth.com/#plans" className={styles.primaryButton}>
+                See the plans
+              </a>
+              <Link href="/login" className={styles.ghostButtonBlock}>
+                I already have an account
+              </Link>
+            </div>
           </div>
         </div>
 
         <footer className={styles.legal}>
           <span>© 2026 Centurie Growth, a Centurie Agency company</span>
-          <span>Terms · Privacy</span>
+          <span>
+            <a href="https://www.centuriegrowth.com/terms.html">Terms</a> ·{" "}
+            <a href="https://www.centuriegrowth.com/privacy.html">Privacy</a>
+          </span>
         </footer>
       </main>
     </div>

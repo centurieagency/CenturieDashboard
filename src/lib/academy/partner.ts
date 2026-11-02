@@ -1,6 +1,7 @@
 import "server-only";
 
 import { and, eq } from "drizzle-orm";
+import { cache } from "react";
 import type Stripe from "stripe";
 
 import { db } from "@/db";
@@ -69,7 +70,8 @@ export async function createCheckoutUrl(plan: PlanId, origin: string, rep?: Pick
     },
     metadata: meta,
     allow_promotion_codes: false,
-    success_url: `${origin}/pay/success`,
+    // {CHECKOUT_SESSION_ID} : remplacé par Stripe ; la page de confirmation s'en sert pour créer le compte du client.
+    success_url: `${origin}/pay/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: "https://www.centuriegrowth.com/#plans",
   });
   if (!session.url) throw new Error("Stripe Checkout returned no URL");
@@ -147,6 +149,29 @@ async function instagramOf(subId: string) {
   }
 }
 
+/**
+ * Paiements remboursés ou contestés (litige) sur le compte Stripe : le mois correspondant ne donne pas de commission.
+ * Lus une fois par requête, même si plusieurs apporteurs sont affichés (page admin).
+ */
+const reversedPayments = cache(async () => {
+  const ids = new Set<string>();
+  const add = (v: string | { id: string } | null | undefined) => v && ids.add(typeof v === "string" ? v : v.id);
+  const [refunds, disputes] = await Promise.all([
+    stripe.refunds.list({ limit: 100 }).autoPagingToArray({ limit: 2000 }),
+    stripe.disputes.list({ limit: 100 }).autoPagingToArray({ limit: 2000 }),
+  ]);
+  for (const r of refunds) if (r.status !== "failed" && r.status !== "canceled") { add(r.payment_intent); add(r.charge); }
+  for (const d of disputes) { add(d.payment_intent); add(d.charge); }
+  return ids;
+});
+
+const isReversed = (inv: Stripe.Invoice, reversed: Set<string>) =>
+  (inv.payments?.data ?? []).some((p) => {
+    const pi = p.payment.payment_intent;
+    const ch = p.payment.charge;
+    return (pi && reversed.has(typeof pi === "string" ? pi : pi.id)) || (ch && reversed.has(typeof ch === "string" ? ch : ch.id));
+  });
+
 export async function repSales(repId: string): Promise<RepSales> {
   if (!/^[0-9a-f-]{36}$/.test(repId)) throw new Error("Invalid rep id");
   const subs = await stripe.subscriptions.search({
@@ -156,16 +181,18 @@ export async function repSales(repId: string): Promise<RepSales> {
   });
 
   const byMonth = new Map<string, number>();
+  const reversed = await reversedPayments();
   const clients = await Promise.all(
     subs.data.map(async (sub): Promise<RepClient | null> => {
       const plan = planOf(sub);
       if (!plan) return null;
       const [invoices, instagram] = await Promise.all([
-        stripe.invoices.list({ subscription: sub.id, status: "paid", limit: 100 }),
+        stripe.invoices.list({ subscription: sub.id, status: "paid", limit: 100, expand: ["data.payments"] }),
         instagramOf(sub.id),
       ]);
       const paid = invoices.data
-        .filter((i) => (i.amount_paid ?? 0) > 0)
+        // Mois remboursé ou contesté : pas de commission (et il ne compte pas dans les 12 mois).
+        .filter((i) => (i.amount_paid ?? 0) > 0 && !isReversed(i, reversed))
         .sort((a, b) => (a.status_transitions?.paid_at ?? a.created) - (b.status_transitions?.paid_at ?? b.created));
       let earned = 0;
       paid.forEach((inv, i) => {

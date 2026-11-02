@@ -13,16 +13,23 @@ import {
   PASSWORD_HASH_ROUNDS,
   upsertOAuthUser,
 } from "@/lib/users";
+import { clearFailures, recordFailure, tooManyFailures } from "@/lib/access";
 import { credentialsSchema, type CredentialsInput } from "@/lib/validations/auth";
 
 // Hash factice : on compare quand même quand l'email est inconnu, pour ne pas révéler son existence par le temps de réponse.
 let dummyHash: Promise<string> | undefined;
 
 async function verifyCredentials({ email, password }: CredentialsInput): Promise<User | null> {
+  // Trop d'échecs récents pour cet email : on refuse sans même comparer (devinette de mot de passe).
+  if (await tooManyFailures(email)) return null;
   const user = await findUserByEmail(email);
   dummyHash ??= bcrypt.hash("not-a-real-password", PASSWORD_HASH_ROUNDS);
   const valid = await bcrypt.compare(password, user?.passwordHash ?? (await dummyHash));
-  if (!user?.passwordHash || !valid) return null;
+  if (!user?.passwordHash || !valid) {
+    await recordFailure(email);
+    return null;
+  }
+  await clearFailures(email);
   return { id: user.id, email: user.email, name: user.name };
 }
 
@@ -69,11 +76,13 @@ export const authOptions: NextAuthOptions = {
         if (dbUser.email === ADMIN_EMAIL) return token;
         // Un apporteur d'affaires non plus : il n'a accès qu'à l'Academy.
         if (dbUser.role === "sales") return token;
-        // À la connexion : on retrouve le client Stripe existant, sinon on le crée.
+        // Client Stripe : retrouvé par email seulement si l'adresse est vérifiée (Google). Un compte email/mot de passe
+        // n'est relié qu'après une preuve (paiement ou lien de l'admin), voir lib/access.ts.
         try {
-          token.stripeCustomerId = await ensureStripeCustomer(dbUser);
+          if (account?.provider === "google") await ensureStripeCustomer(dbUser);
+          token.stripeCustomerId = dbUser.stripeCustomerId ?? undefined;
           // Token client de l'API Centurie pour ce client Stripe (stocké en base, jamais dans la session).
-          await ensureCenturieToken(dbUser);
+          if (dbUser.stripeCustomerId) await ensureCenturieToken(dbUser);
         } catch (error) {
           console.error("Stripe customer / Centurie token setup failed", error);
         }

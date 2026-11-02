@@ -118,5 +118,29 @@ export const salesPaymentLinks = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.plan] })],
 );
 
+// ---------- Accès client ----------
+
+/**
+ * Liens personnels pour définir son mot de passe (compte client créé par l'admin, ou mot de passe oublié).
+ * Jeton secret dans le lien ; seul son hash SHA-256 est stocké. Usage unique, durée limitée.
+ */
+export const accessLinks = pgTable("access_links", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tokenHash: text("token_hash").notNull().unique(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+});
+
+/** Échecs de connexion par email : au-delà d'un seuil sur une fenêtre courte, la connexion est bloquée un moment. */
+export const loginFailures = pgTable("login_failures", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

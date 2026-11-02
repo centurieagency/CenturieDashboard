@@ -5,7 +5,9 @@ import { z } from "zod";
 
 import {
   addTarget,
+  backendToken,
   CenturieApiError,
+  listAccounts,
   connectAccount,
   deleteAccount,
   removeTarget,
@@ -20,6 +22,7 @@ import { redirect } from "next/navigation";
 import { isAdminSession } from "@/lib/admin";
 import { auth } from "@/lib/auth";
 import { env } from "@/lib/env";
+import { ensureCenturieToken, findUserByEmail } from "@/lib/users";
 import { db } from "@/db";
 import { hiddenSubscriptions } from "@/db/schema";
 import { cancelSubscriptionNow, getSubscriptionStatus } from "@/lib/stripe";
@@ -54,9 +57,12 @@ async function run(
   subId: string,
   fn: (token: string, subId: string) => Promise<string>,
   conflict?: string,
+  /** Connexion et identifiants : le client propriétaire de l'abonnement peut aussi les envoyer. */
+  allowOwner = false,
 ): Promise<ActionState> {
-  if (!isAdminSession(await auth())) return NOT_ALLOWED;
   if (!subIdSchema.safeParse(subId).success) return { status: "error", message: "Unknown subscription." };
+  const session = await auth();
+  if (!isAdminSession(session) && !(allowOwner && (await ownsSubscription(session?.user.email, subId)))) return NOT_ALLOWED;
   const token = env.CENTURIE_API_TOKEN;
   try {
     const message = await fn(token, subId);
@@ -68,6 +74,22 @@ async function run(
   } catch (error) {
     if (!(error instanceof CenturieApiError)) console.error("Centurie API action failed", error);
     return { status: "error", message: errorMessage(error, conflict) };
+  }
+}
+
+/**
+ * Le client connecté possède-t-il cet abonnement ? Vérifié avec son propre token client, qui ne voit que ses comptes.
+ * Seul un compte relié à un client Stripe (preuve : paiement, Google ou lien de l'admin) peut répondre oui.
+ */
+async function ownsSubscription(email: string | null | undefined, subId: string): Promise<boolean> {
+  if (!email) return false;
+  const user = await findUserByEmail(email);
+  if (!user || user.role !== "client" || !user.stripeCustomerId) return false;
+  try {
+    const token = await ensureCenturieToken(user).catch(() => backendToken(user.stripeCustomerId!));
+    return (await listAccounts(token)).some((a) => a.sub_id === subId);
+  } catch {
+    return false;
   }
 }
 
@@ -93,6 +115,7 @@ export async function connectAction(subId: string, _prev: ActionState, form: For
       return "Account sent. We're logging in, this can take a few minutes.";
     },
     "This Instagram account is already connected to a subscription.",
+    true,
   );
 }
 
@@ -170,7 +193,7 @@ export async function passwordAction(subId: string, _prev: ActionState, form: Fo
   return run(subId, async (token, sub) => {
     await updatePassword(token, sub, parsed.data);
     return "Password updated. We'll log in again with it.";
-  });
+  }, undefined, true);
 }
 
 export async function totpKeyAction(subId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
@@ -183,7 +206,7 @@ export async function totpKeyAction(subId: string, _prev: ActionState, form: For
   return run(subId, async (token, sub) => {
     await send2FAKey(token, sub, parsed.data);
     return "Authenticator key saved.";
-  });
+  }, undefined, true);
 }
 
 export async function backupCodesAction(subId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
@@ -196,7 +219,7 @@ export async function backupCodesAction(subId: string, _prev: ActionState, form:
     const res = await update2FACodes(token, sub, codes.slice(0, 5));
     const saved = res?.account?.codes_count ?? codes.length;
     return `${saved} backup code${saved > 1 ? "s" : ""} saved.`;
-  });
+  }, undefined, true);
 }
 
 // ---------- Suppression (admin) ----------

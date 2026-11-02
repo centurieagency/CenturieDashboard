@@ -26,7 +26,8 @@ export const requireCustomer = cache(async (callbackUrl = "/") => {
   // Les apporteurs d'affaires n'ont pas d'espace client : leur espace, c'est l'Academy.
   if (dbUser?.role === "sales") redirect("/academy");
 
-  if (dbUser) {
+  // Relier un client Stripe par email n'est sûr que si l'adresse est vérifiée (Google) ; sinon seul le lien en base compte.
+  if (dbUser && (dbUser.stripeCustomerId || session.user.provider === "google")) {
     try {
       customerId = await ensureStripeCustomer(dbUser);
     } catch (error) {
@@ -41,7 +42,6 @@ export const requireCustomer = cache(async (callbackUrl = "/") => {
     }
   }
 
-  customerId ??= session.user.stripeCustomerId;
   if (customerId && !apiToken) apiToken = backendToken(customerId);
 
   return { user: session.user, customerId, apiToken };

@@ -22,13 +22,14 @@ import {
   type AccountConfig,
   type AccountSummary,
 } from "@/lib/centurie-api";
-import type { SubscriptionCustomer } from "@/lib/stripe";
+import { getSubscriptionCustomer, type SubscriptionCustomer } from "@/lib/stripe";
 import styles from "./account.module.css";
 import { AccountTabs, type Tab } from "./account-tabs";
 import { PERIODS, type Period } from "./analytics";
 import { Analysis } from "./analysis";
 import { Overview } from "./overview";
 import { Statistics } from "./statistics";
+import { AccessLinkButton } from "@/app/admin/access-link-button";
 import { TabTransition } from "./tab-transition";
 import { RemovalPanel, TargetsTable, TargetTools, type TargetRow } from "./targets-ui";
 import {
@@ -78,7 +79,7 @@ export async function AccountView({
   basePath: "" | "/admin";
   email?: string | null;
   /** Espace admin : client propriétaire de l'abonnement (promesse lancée par la page, en parallèle des appels API). */
-  customer?: Promise<SubscriptionCustomer | null>;
+  customer?: Promise<(SubscriptionCustomer & { instagram: string | null }) | null>;
 }) {
   const admin = basePath === "/admin";
   if (!admin && tab === "analysis") tab = "overview";
@@ -110,22 +111,23 @@ export async function AccountView({
       <>
         <div className={styles.head}>
           <span className={styles.eyebrow}>Instagram account</span>
-          <h1 className={styles.title}>{admin ? "Connect an Instagram account" : "No Instagram account yet"}</h1>
+          <h1 className={styles.title}>{admin ? "Connect an Instagram account" : "Connect your Instagram account"}</h1>
           <p className={styles.lead}>
             {admin
               ? "Link the account to grow on this subscription. We log in and start within a day."
-              : "Your account manager will connect your Instagram account to this subscription. It will show up here once it's done."}
+              : "Enter the Instagram account to grow and its password. They go straight to our secure growth engine over an encrypted connection and are only used to run your account. Growth starts within a day."}
           </p>
           <code className={styles.subId}>{subId}</code>
         </div>
-        {admin && (
-          <>
-            <section className={`${styles.panel} ${styles.narrow}`}>
-              <ConnectForm subId={subId} />
-            </section>
-            <DangerZone subId={subId} username={null} />
-          </>
-        )}
+        <section className={`${styles.panel} ${styles.narrow}`}>
+          <ConnectForm subId={subId} defaultUsername={(await (customer ?? getSubscriptionCustomer(subId).catch(() => null)))?.instagram} />
+          {!admin && (
+            <p className={styles.muted}>
+              Two-factor authentication on? Once connected, you can add backup codes in Settings if Instagram asks for them.
+            </p>
+          )}
+        </section>
+        {admin && <DangerZone subId={subId} username={null} />}
       </>,
     );
   }
@@ -306,7 +308,7 @@ export async function AccountView({
             </section>
           )}
 
-          <div className={admin && (needsPassword || needs2FA) ? styles.columns : undefined}>
+          <div className={needsPassword || needs2FA ? styles.columns : undefined}>
             <section className={styles.panel}>
               <div className={styles.panelHead}>
                 <h2 className={styles.panelTitle}>Daily limits</h2>
@@ -333,7 +335,7 @@ export async function AccountView({
             </section>
 
             {/* Identifiants : seulement quand Instagram les a refusés. */}
-            {admin && (needsPassword || needs2FA) && (
+            {(needsPassword || needs2FA) && (
               <section className={styles.panel}>
                 <div className={styles.panelHead}>
                   <h2 className={styles.panelTitle}>Login and security</h2>
@@ -450,7 +452,7 @@ function Shell({
 }
 
 /** Espace admin : à qui appartient ce compte. */
-async function CustomerBar({ customer: customerP }: { customer: Promise<SubscriptionCustomer | null> }) {
+async function CustomerBar({ customer: customerP }: { customer: Promise<(SubscriptionCustomer & { instagram: string | null }) | null> }) {
   const customer = await customerP;
   return (
     <div className={styles.customerBar}>
@@ -464,6 +466,8 @@ async function CustomerBar({ customer: customerP }: { customer: Promise<Subscrip
       )}
       {customer?.name && <span className={styles.customerMeta}>{customer.name}</span>}
       {customer && <code className={styles.subId}>{customer.id}</code>}
+      {customer?.instagram && <span className={styles.customerMeta}>Instagram at checkout: @{customer.instagram}</span>}
+      {customer?.email && <AccessLinkButton customerId={customer.id} className={styles.ghostButton} />}
     </div>
   );
 }

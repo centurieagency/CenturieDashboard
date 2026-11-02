@@ -726,3 +726,11 @@
     font-size: 14px;
   }
 }
+
+/* Même bouton principal, utilisé comme lien (page « Create your account ») */
+a.primaryButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}

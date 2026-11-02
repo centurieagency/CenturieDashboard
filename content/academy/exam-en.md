@@ -32,11 +32,11 @@ The correct answer is marked ✅.
 - c) Because the team is busy during the first weeks
 - d) It doesn't; every account starts at full speed
 
-**A5.** Who collects the client's Instagram login details?
-- a) The sales representative, during the closing call
-- b) The client posts them in the dashboard
-- ✅ c) The Centurie team, through a secure channel, after the client signs up
-- d) Nobody, the engine doesn't need them
+**A5.** How does a new client give us their Instagram login details?
+- a) They send them to the sales representative during the closing call
+- b) They send them by email or direct message
+- ✅ c) They enter them themselves in their secure client space, after subscribing
+- d) They don't, the engine doesn't need them
 
 **A6.** A prospect asks which software powers the service. What do you answer?
 - a) You name the tool behind it, to show it's serious
@@ -206,7 +206,7 @@ The correct answer is marked ✅.
 - c) You promise it to close the deal
 - d) You offer the Signature plan to reach it
 
-**D3.** A prospect refuses to give the team their login or to validate two-factor authentication. What do you do?
+**D3.** A prospect refuses to connect their Instagram account or to validate two-factor authentication. What do you do?
 - a) You sign them anyway
 - ✅ b) You don't sign them: the service can't run without it
 - c) You find a way to run it without access
@@ -214,7 +214,7 @@ The correct answer is marked ✅.
 
 **D4.** (**CRITICAL**) During the call, the prospect offers to send you their password right away to "save time". What do you do?
 - ⛔ a) You accept and forward it to the team
-- ✅ b) You refuse: the team collects access securely after signing up
+- ✅ b) You refuse: they enter it themselves in their secure client space after subscribing
 - ⛔ c) You accept and write it in your notes
 - ⛔ d) You ask them to send it by DM
 
@@ -299,3 +299,9 @@ The correct answer is marked ✅.
 - ✅ b) It stops, as the contract for that account ends
 - c) You must repay what you earned
 - d) It doubles for the remaining months
+
+**E8.** One of your client's monthly payments is refunded, or disputed with their bank. What happens to your commission for that month?
+- a) You keep it
+- ✅ b) There is no commission on a refunded or disputed month
+- c) You earn double the next month
+- d) The client pays it to you directly

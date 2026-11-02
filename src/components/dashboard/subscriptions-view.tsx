@@ -363,18 +363,17 @@ function InstagramRow({
       <div className={styles.instagram}>
         <span className={styles.instagramLabel}>Instagram</span>
         <p className={styles.instagramNote}>
-          {readOnly ? "Your account manager will connect your account soon." : "No account connected yet."}
+          {readOnly ? "Connect your Instagram account to start growing." : "No account connected yet."}
         </p>
-        {!readOnly && (
-          <Link href={href} className={styles.cardButtonPrimary}>
-            Connect Instagram
-          </Link>
-        )}
+        <Link href={href} className={styles.cardButtonPrimary}>
+          {readOnly ? "Connect my Instagram" : "Connect Instagram"}
+        </Link>
       </div>
     );
   }
 
-  const needsFix = !readOnly && (status.tone === "warn" || status.tone === "danger");
+  // Le client peut corriger lui-même un mot de passe ou la double authentification (orange) ; un compte arrêté (rouge), non.
+  const needsFix = status.tone === "warn" || (!readOnly && status.tone === "danger");
   return (
     <div className={styles.instagram}>
       <span className={styles.instagramLabel}>Instagram</span>

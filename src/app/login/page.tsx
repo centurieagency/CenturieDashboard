@@ -56,7 +56,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <div className={styles.topbar}>
           <span>New to Centurie Growth?</span>
           <Link href="/signup" className={styles.ghostButton}>
-            Create an account
+            Get access
           </Link>
         </div>
 
@@ -73,7 +73,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               <div className={styles.rule} />
               <span>New to Centurie Growth?</span>
               <Link href="/signup" className={styles.ghostButtonBlock}>
-                Create an account
+                Get access
               </Link>
             </div>
           </div>
@@ -81,7 +81,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
         <footer className={styles.legal}>
           <span>© 2026 Centurie Growth, a Centurie Agency company</span>
-          <span>Terms · Privacy</span>
+          <span>
+            <a href="https://www.centuriegrowth.com/terms.html">Terms</a> ·{" "}
+            <a href="https://www.centuriegrowth.com/privacy.html">Privacy</a>
+          </span>
         </footer>
       </main>
     </div>

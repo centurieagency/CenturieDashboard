@@ -70,7 +70,7 @@ export function AutoRefresh() {
 
 // ---------- Connexion ----------
 
-export function ConnectForm({ subId }: { subId: string }) {
+export function ConnectForm({ subId, defaultUsername }: { subId: string; defaultUsername?: string | null }) {
   const [state, action, pending] = useActionState(connectAction.bind(null, subId), IDLE);
   const [show, setShow] = useState(false);
   const ref = useResetOnSuccess(state);
@@ -94,6 +94,7 @@ export function ConnectForm({ subId }: { subId: string }) {
             spellCheck={false}
             autoComplete="off"
             placeholder="yourbusiness"
+            defaultValue={defaultUsername ?? undefined}
             required
           />
         </div>
