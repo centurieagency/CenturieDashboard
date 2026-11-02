@@ -43,13 +43,39 @@ export async function createAccessLinkForCustomer(customer: { id: string; email:
     await db.update(users).set({ stripeCustomerId: customer.id }).where(eq(users.id, user.id));
   }
 
-  const token = randomBytes(24).toString("base64url");
-  await db.insert(accessLinks).values({
-    tokenHash: hashToken(token),
-    userId: user!.id,
-    expiresAt: new Date(Date.now() + ACCESS_LINK_DAYS * 24 * HOUR),
-  });
+  const { token } = await createAccessLink(user!.id, ACCESS_LINK_DAYS * 24);
   return { token, email } as const;
+}
+
+/** Lien à usage unique (jeton en clair renvoyé une seule fois, seul son hash est stocké). */
+async function createAccessLink(userId: string, hours: number) {
+  const token = randomBytes(24).toString("base64url");
+  const [link] = await db
+    .insert(accessLinks)
+    .values({ tokenHash: hashToken(token), userId, expiresAt: new Date(Date.now() + hours * HOUR) })
+    .returning({ id: accessLinks.id });
+  return { token, id: link!.id };
+}
+
+// ---------- Mot de passe oublié ----------
+
+export const RESET_LINK_HOURS = 2;
+const MAX_RESETS_PER_HOUR = 3;
+
+/**
+ * Envoie un lien de réinitialisation si le compte existe. Ne révèle jamais si l'email est connu
+ * (même réponse dans tous les cas), et limite les envois pour éviter d'inonder une boîte mail.
+ * L'admin (Google uniquement) n'a pas de mot de passe à réinitialiser.
+ */
+export async function requestPasswordReset(email: string, origin: string, send: (to: string, name: string | null, url: string, linkId: string, hours: number) => Promise<boolean>) {
+  const normalized = email.toLowerCase();
+  if (normalized === ADMIN_EMAIL) return;
+  const user = await findUserByEmail(normalized);
+  if (!user || (!user.passwordHash && !user.stripeCustomerId && user.role !== "sales")) return;
+  const recent = await db.$count(accessLinks, and(eq(accessLinks.userId, user.id), gte(accessLinks.createdAt, new Date(Date.now() - HOUR))));
+  if (recent >= MAX_RESETS_PER_HOUR) return;
+  const { token, id } = await createAccessLink(user.id, RESET_LINK_HOURS);
+  await send(user.email, user.name, `${origin}/access/${token}`, id, RESET_LINK_HOURS);
 }
 
 export async function findUsableAccessLink(token: string) {

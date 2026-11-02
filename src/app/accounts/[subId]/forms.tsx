@@ -70,7 +70,16 @@ export function AutoRefresh() {
 
 // ---------- Connexion ----------
 
-export function ConnectForm({ subId, defaultUsername }: { subId: string; defaultUsername?: string | null }) {
+export function ConnectForm({
+  subId,
+  defaultUsername,
+  requireConsent = false,
+}: {
+  subId: string;
+  defaultUsername?: string | null;
+  /** Espace client : autorisation explicite de gérer le compte. */
+  requireConsent?: boolean;
+}) {
   const [state, action, pending] = useActionState(connectAction.bind(null, subId), IDLE);
   const [show, setShow] = useState(false);
   const ref = useResetOnSuccess(state);
@@ -116,8 +125,17 @@ export function ConnectForm({ subId, defaultUsername }: { subId: string; default
             {show ? "Hide" : "Show"}
           </button>
         </div>
-        <span className={styles.hint}>Sent securely to our team to run your account. Never shown again.</span>
+        <span className={styles.hint}>Sent over an encrypted connection to run your account. Never shown again.</span>
       </div>
+      {requireConsent && (
+        <label className={styles.checkRow}>
+          <input type="checkbox" name="consent" required />
+          <span>
+            I authorize Centurie Growth to access and manage this Instagram account on my behalf, for the duration of my
+            subscription.
+          </span>
+        </label>
+      )}
       <Feedback state={state} />
       <button type="submit" className={styles.primaryButton} disabled={pending}>
         {pending ? "Connecting…" : "Connect account"}

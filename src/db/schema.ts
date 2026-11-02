@@ -142,5 +142,27 @@ export const loginFailures = pgTable("login_failures", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Questionnaire de démarrage d'un abonnement (un par compte Instagram) : de quoi préparer le ciblage. */
+export type BriefAnswers = {
+  sector: string;
+  location: string;
+  idealCustomer: string;
+  competitors: string[];
+  website: string;
+  goal: string;
+  notes: string;
+};
+
+export const onboardingBriefs = pgTable("onboarding_briefs", {
+  subId: text("sub_id").primaryKey(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+  answers: jsonb("answers").$type<BriefAnswers>().notNull(),
+  submittedAt: timestamp("submitted_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

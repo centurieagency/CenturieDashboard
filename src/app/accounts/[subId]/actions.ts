@@ -24,7 +24,7 @@ import { auth } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { ensureCenturieToken, findUserByEmail } from "@/lib/users";
 import { db } from "@/db";
-import { hiddenSubscriptions } from "@/db/schema";
+import { hiddenSubscriptions, onboardingBriefs } from "@/db/schema";
 import { cancelSubscriptionNow, getSubscriptionStatus } from "@/lib/stripe";
 
 export type ActionState = { status: "idle" | "success" | "error"; message?: string };
@@ -108,6 +108,9 @@ const connectSchema = z.object({
 export async function connectAction(subId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
   const parsed = connectSchema.safeParse({ username: form.get("username"), password: form.get("password") });
   if (!parsed.success) return invalid(parsed.error);
+  // Le client donne son autorisation explicite (case à cocher) ; l'admin agit sur instruction du client.
+  if (!isAdminSession(await auth()) && form.get("consent") !== "on")
+    return { status: "error", message: "Please confirm you authorize Centurie Growth to manage this account." };
   return run(
     subId,
     async (token, sub) => {
@@ -341,4 +344,67 @@ export async function addTargetsBulkAction(subId: string, _prev: ActionState, fo
   if (invalid) parts.push(`${invalid} invalid`);
   if (failed) parts.push(`${failed} failed`);
   return { status: failed && !added ? "error" : "success", message: parts.join(" · ") + "." };
+}
+
+// ---------- Questionnaire de démarrage ----------
+
+const handleList = (raw: string) =>
+  [...new Set(raw.split(/[\s,;]+/).map((v) => v.trim().replace(/^@/, "").toLowerCase()).filter((v) => /^[a-z0-9._]{1,30}$/.test(v)))].slice(0, 15);
+
+const briefSchema = z.object({
+  sector: z.string().trim().min(2, "Tell us your business sector.").max(80),
+  location: z.string().trim().max(120),
+  idealCustomer: z.string().trim().min(10, "Describe your ideal customer in a sentence or two.").max(600),
+  competitors: z.array(z.string()).min(3, "List at least 3 similar accounts or competitors.").max(15),
+  website: z.string().trim().max(200),
+  goal: z.string().trim().min(2, "Choose your main goal.").max(80),
+  notes: z.string().trim().max(1000),
+});
+
+/** Questionnaire de démarrage : rempli par le client (propriétaire vérifié) ou par l'admin. */
+export async function saveBriefAction(subId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
+  if (!subIdSchema.safeParse(subId).success) return { status: "error", message: "Unknown subscription." };
+  const session = await auth();
+  const admin = isAdminSession(session);
+  if (!admin && !(await ownsSubscription(session?.user.email, subId))) return NOT_ALLOWED;
+  const sectorChoice = String(form.get("sector") ?? "");
+  const parsed = briefSchema.safeParse({
+    sector: sectorChoice === "Other" ? String(form.get("sector_other") ?? "") : sectorChoice,
+    location: form.get("location") ?? "",
+    idealCustomer: form.get("idealCustomer") ?? "",
+    competitors: handleList(String(form.get("competitors") ?? "")),
+    website: form.get("website") ?? "",
+    goal: form.get("goal") ?? "",
+    notes: form.get("notes") ?? "",
+  });
+  if (!parsed.success) return invalid(parsed.error);
+  const user = !admin && session?.user.email ? await findUserByEmail(session.user.email) : undefined;
+  await db
+    .insert(onboardingBriefs)
+    .values({ subId, userId: user?.id ?? null, answers: parsed.data })
+    .onConflictDoUpdate({ target: onboardingBriefs.subId, set: { answers: parsed.data, updatedAt: new Date() } });
+  revalidatePath(`/accounts/${subId}`);
+  revalidatePath(`/admin/accounts/${subId}`);
+  return { status: "success", message: "Thanks! Your account manager will use this to set up your targets." };
+}
+
+/** Admin : ajoute en cibles les comptes cités dans le questionnaire (ceux déjà présents sont ignorés). */
+export async function addBriefTargetsAction(subId: string, _prev: ActionState): Promise<ActionState> {
+  if (!isAdminSession(await auth())) return NOT_ALLOWED;
+  if (!subIdSchema.safeParse(subId).success) return { status: "error", message: "Unknown subscription." };
+  const brief = await db.query.onboardingBriefs.findFirst({ where: (b, { eq }) => eq(b.subId, subId) });
+  if (!brief?.answers.competitors.length) return { status: "error", message: "No accounts in the questionnaire." };
+  let added = 0;
+  let skipped = 0;
+  for (const name of brief.answers.competitors) {
+    try {
+      await addTarget(env.CENTURIE_API_TOKEN, subId, name);
+      added++;
+    } catch (error) {
+      if (error instanceof CenturieApiError && error.status === 409) skipped++;
+      else console.error("Adding brief target failed", name, error);
+    }
+  }
+  revalidatePath(`/admin/accounts/${subId}`);
+  return { status: "success", message: `${added} target${added === 1 ? "" : "s"} added${skipped ? `, ${skipped} already there` : ""}.` };
 }

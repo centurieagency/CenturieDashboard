@@ -43,6 +43,13 @@
       "when": 1793612640572,
       "tag": "0005_access_links",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793616673277,
+      "tag": "0006_onboarding_briefs",
+      "breakpoints": true
     }
   ]
 }

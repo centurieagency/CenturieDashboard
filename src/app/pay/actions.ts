@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
-import { checkoutClaim, claimCheckoutAccount, findUsableAccessLink, consumeAccessLink } from "@/lib/access";
+import { checkoutClaim, claimCheckoutAccount, clearFailures, consumeAccessLink, findUsableAccessLink } from "@/lib/access";
 import { ensureCenturieToken, PASSWORD_HASH_ROUNDS } from "@/lib/users";
 
 export type PasswordState = { error?: string; done?: boolean; email?: string };
@@ -43,5 +43,7 @@ export async function setPasswordAction(token: string, _prev: PasswordState, for
   const found = await findUsableAccessLink(token);
   if (!found) return { error: "This link has expired or was already used. Ask your account manager for a new one." };
   await consumeAccessLink(found.link.id, found.user.id, await bcrypt.hash(input.data.password, PASSWORD_HASH_ROUNDS), input.data.name);
+  // Nouveau mot de passe : les échecs passés ne doivent plus bloquer la connexion.
+  await clearFailures(found.user.email);
   return { done: true, email: found.user.email };
 }

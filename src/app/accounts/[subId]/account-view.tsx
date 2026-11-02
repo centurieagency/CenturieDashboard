@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { SiteHeader } from "@/components/site-header";
+import { db } from "@/db";
+import type { BriefAnswers } from "@/db/schema";
 import { StatusBadge } from "@/components/status-badge";
 import { accountStatus, displayStatus } from "@/lib/account-status";
 import {
@@ -30,6 +32,7 @@ import { Analysis } from "./analysis";
 import { Overview } from "./overview";
 import { Statistics } from "./statistics";
 import { AccessLinkButton } from "@/app/admin/access-link-button";
+import { AddBriefTargets, BriefForm } from "./brief";
 import { TabTransition } from "./tab-transition";
 import { RemovalPanel, TargetsTable, TargetTools, type TargetRow } from "./targets-ui";
 import {
@@ -55,6 +58,9 @@ export function parsePeriod(value: string | undefined): Period {
   const n = Number(value);
   return (PERIODS as readonly number[]).includes(n) ? (n as Period) : 30;
 }
+
+/** Heure de la requête (page rendue côté serveur à chaque visite). */
+const requestTime = () => Date.now();
 
 export const isSubId = (value: string) => /^sub_[A-Za-z0-9]+$/.test(value);
 
@@ -106,6 +112,11 @@ export async function AccountView({
   // Abonnement inconnu, hors périmètre ou non utilisable (annulé…).
   if (!summary) notFound();
 
+  const briefRow = await db.query.onboardingBriefs.findFirst({ where: (b, { eq }) => eq(b.subId, subId) });
+  const brief = briefRow?.answers ?? null;
+  // Questionnaire tout juste envoyé : on remercie le client sur l'overview (le formulaire disparaît de cet onglet).
+  const briefJustSent = !!briefRow && requestTime() - briefRow.updatedAt.getTime() < 10 * 60_000;
+
   if (!summary.username) {
     return shell(
       <>
@@ -120,13 +131,14 @@ export async function AccountView({
           <code className={styles.subId}>{subId}</code>
         </div>
         <section className={`${styles.panel} ${styles.narrow}`}>
-          <ConnectForm subId={subId} defaultUsername={(await (customer ?? getSubscriptionCustomer(subId).catch(() => null)))?.instagram} />
+          <ConnectForm subId={subId} requireConsent={!admin} defaultUsername={(await (customer ?? getSubscriptionCustomer(subId).catch(() => null)))?.instagram} />
           {!admin && (
             <p className={styles.muted}>
               Two-factor authentication on? Once connected, you can add backup codes in Settings if Instagram asks for them.
             </p>
           )}
         </section>
+        <BriefSection subId={subId} brief={brief} admin={admin} />
         {admin && <DangerZone subId={subId} username={null} />}
       </>,
     );
@@ -217,6 +229,14 @@ export async function AccountView({
         </p>
       )}
 
+      {tab === "overview" && !admin && !brief && <BriefSection subId={subId} brief={null} admin={false} />}
+      {tab === "overview" && !admin && briefJustSent && (
+        <p role="status" className={`${styles.notice} ${styles.noticeOk}`}>
+          Thanks, we received your answers. Your account manager will use them to choose your first targets. You can edit them
+          anytime in Settings.
+        </p>
+      )}
+
       {tab === "overview" &&
         (isConnecting ? (
           <ConnectingPanel username={username} readOnly={readOnly} />
@@ -257,6 +277,7 @@ export async function AccountView({
 
       {tab === "targets" && (
         <div className={styles.tabStack}>
+          {admin && brief && <BriefSection subId={subId} brief={brief} admin />}
           {admin && <TargetTools subId={subId} analysisHref={`${href}?tab=analysis`} />}
           {targets === null ? (
             <p className={styles.error}>Targets are unavailable right now.</p>
@@ -373,6 +394,8 @@ export async function AccountView({
               )}
             </dl>
           </section>
+
+          <BriefSection subId={subId} brief={brief} admin={admin} />
 
           {admin && <DangerZone subId={subId} username={username} />}
         </>
@@ -529,6 +552,69 @@ function ConnectingPanel({ username, readOnly }: { username: string; readOnly: b
         </p>
         <AutoRefresh />
       </div>
+    </section>
+  );
+}
+
+/** Questionnaire de démarrage : formulaire pour le client, réponses (et ajout des cibles) pour l'admin. */
+function BriefSection({ subId, brief, admin }: { subId: string; brief: BriefAnswers | null; admin: boolean }) {
+  if (admin) {
+    return (
+      <section className={styles.panel} aria-labelledby={`brief-${subId}`}>
+        <div className={styles.panelHead}>
+          <h2 id={`brief-${subId}`} className={styles.panelTitle}>
+            Client questionnaire
+          </h2>
+        </div>
+        {brief ? (
+          <>
+            <dl className={styles.briefList}>
+              <dt>Sector</dt>
+              <dd>{brief.sector}</dd>
+              {brief.location && (
+                <>
+                  <dt>City or area</dt>
+                  <dd>{brief.location}</dd>
+                </>
+              )}
+              <dt>Ideal customer</dt>
+              <dd>{brief.idealCustomer}</dd>
+              <dt>Similar accounts</dt>
+              <dd>{brief.competitors.map((c) => `@${c}`).join(", ")}</dd>
+              {brief.website && (
+                <>
+                  <dt>Website</dt>
+                  <dd>{brief.website}</dd>
+                </>
+              )}
+              <dt>Main goal</dt>
+              <dd>{brief.goal}</dd>
+              {brief.notes && (
+                <>
+                  <dt>Notes</dt>
+                  <dd>{brief.notes}</dd>
+                </>
+              )}
+            </dl>
+            <AddBriefTargets subId={subId} count={brief.competitors.length} />
+          </>
+        ) : (
+          <p className={styles.muted}>The client hasn&apos;t filled in the questionnaire yet.</p>
+        )}
+      </section>
+    );
+  }
+  return (
+    <section className={styles.panel} aria-labelledby={`brief-${subId}`}>
+      <div className={styles.panelHead}>
+        <h2 id={`brief-${subId}`} className={styles.panelTitle}>
+          {brief ? "Your business" : "Tell us about your business"}
+        </h2>
+      </div>
+      {!brief && (
+        <p className={styles.muted}>Two minutes that help us choose the right audience for you from day one.</p>
+      )}
+      <BriefForm subId={subId} initial={brief} />
     </section>
   );
 }

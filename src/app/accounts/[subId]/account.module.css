@@ -966,3 +966,54 @@ a.customerEmail:hover {
   flex-direction: column;
   gap: 16px;
 }
+
+/* Case d'autorisation (connexion du compte par le client) */
+.checkRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.checkRow input {
+  margin-top: 3px;
+  accent-color: var(--data-accent);
+  flex-shrink: 0;
+}
+
+/* Questionnaire de démarrage : réponses (vue admin) */
+.briefList {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(140px, 200px) minmax(0, 1fr);
+  gap: 10px 20px;
+  font-size: 14.5px;
+}
+
+.briefList dt { color: var(--text-muted); }
+.briefList dd { margin: 0; color: var(--charcoal); white-space: pre-wrap; }
+
+@media (max-width: 640px) {
+  .briefList { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .briefList dd { margin-bottom: 10px; }
+}
+
+/* Zones de texte du questionnaire : hauteur libre (le style .input vise les champs d'une ligne) */
+textarea.input {
+  height: auto;
+  min-height: 84px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+/* Confirmation (questionnaire envoyé) */
+.noticeOk {
+  border-color: color-mix(in srgb, var(--status-ok) 45%, transparent);
+  background: color-mix(in srgb, var(--status-ok) 10%, transparent);
+  color: var(--text-secondary);
+}
